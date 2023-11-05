@@ -380,7 +380,7 @@ class Base
                 $this->fileHandleData['currentHotelIncrement']++;
                 var_dump($this->fileHandleData['currentHotelIncrement']);
 
-                if ($i === 300) {
+                if ($i === 100) {
                     $this->hotelRepository->flush();
                     $this->hotelRepository->initEntities();
                     $this->saveFileHandleData();
