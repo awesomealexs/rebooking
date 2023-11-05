@@ -380,7 +380,7 @@ class Base
                 $this->fileHandleData['currentHotelIncrement']++;
                 var_dump($this->fileHandleData['currentHotelIncrement']);
 
-                if ($i === 80) {
+                if ($i === 300) {
                     $this->hotelRepository->flush();
                     $this->hotelRepository->initEntities();
                     $this->saveFileHandleData();
@@ -388,14 +388,14 @@ class Base
 
                     $i = 0;
                 }
-                if (microtime(true) - $fileHandlingStart > 280) {
+                if (microtime(true) - $fileHandlingStart > 540) {
                     $this->hotelRepository->flush();
                     $temp = [];
                     $this->saveFileHandleData();
                     $done = $this->fileHandleData['currentHotelIncrement'] - $idx;
                     $totalIdx = $this->fileHandleData['currentHotelIncrement'] + $this->fileHandleData['lastHotel'];
                     $this->telegramNotifier->notify(sprintf('DONE: %s, file offset: %s, total: %s', $done, $this->fileHandleData['currentHotelIncrement'], $totalIdx));
-                    throw new \Exception('out of 280 seconds, time ' . (microtime(true) - $fileHandlingStart));
+                    throw new \Exception('out of 540 seconds, time ' . (microtime(true) - $fileHandlingStart));
                 }
             }
             if ($hotelData === []) {
