@@ -328,13 +328,13 @@ class Base
                 var_dump($this->fileHandleData['lastHotel']);
 
 
-                if (microtime(true) - $fileHandlingStart > 580) {
+                if (microtime(true) - $fileHandlingStart > 980) {
 
                     $this->saveFileHandleData();
                     $done = $this->fileHandleData['lastHotel'] - $idx;
                     $totalIdx = $this->fileHandleData['lastHotel'];
                     $this->telegramNotifier->notify(sprintf('DONE: %s, total: %s', $done, $totalIdx));
-                    throw new \Exception('out of 580 seconds, time ' . (microtime(true) - $fileHandlingStart));
+                    throw new \Exception('out of 980 seconds, time ' . (microtime(true) - $fileHandlingStart));
                 }
             }
             if ($hotelData === []) {
