@@ -233,7 +233,7 @@ class Base
 
     public function test()
     {
-        $this->telegramNotifier->notify(123);
+        //$this->telegramNotifier->notify(123);
 
         die;
         $json = file_get_contents(static::STORAGE_DIR . '/junk.json');
@@ -380,7 +380,7 @@ class Base
                 $this->fileHandleData['currentHotelIncrement']++;
                 var_dump($this->fileHandleData['currentHotelIncrement']);
 
-                if ($i === 300) {
+                if ($i === 80) {
                     $this->hotelRepository->flush();
                     $this->hotelRepository->initEntities();
                     $this->saveFileHandleData();

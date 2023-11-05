@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\InverseJoinColumn;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\JoinTable;
 use Doctrine\ORM\Mapping\ManyToMany;
@@ -50,6 +51,8 @@ class Room
 
     #[ManyToMany(targetEntity: RoomAmenities::class, inversedBy: 'amenities', cascade: ['persist'])]
     #[JoinTable('rooms_amenities')]
+    #[JoinColumn(name: 'room_id', referencedColumnName: 'id')]
+    #[InverseJoinColumn(name: 'room_amenities_id', referencedColumnName: 'id')]
     private Collection $amenities;
 
     public function __construct()
