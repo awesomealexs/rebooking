@@ -2,7 +2,7 @@
 
 namespace App\Helper;
 
-use Ratehawk\Enums\FileCutType;
+use App\Enum\FileCutType;
 
 class FileCutter
 {

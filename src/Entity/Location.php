@@ -32,6 +32,9 @@ class Location
     private string $countryName;
 
     #[Column]
+    private string $type;
+
+    #[Column]
     private string $longitude;
 
     #[Column]
@@ -133,4 +136,17 @@ class Location
         $this->countryCode = $countryCode;
         return $this;
     }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): Location
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+
 }

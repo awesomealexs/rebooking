@@ -8,4 +8,4 @@ require_once __DIR__.'/bootstrap.php';
 $base = new Base();
 //$base->getHotelsDumpFile();die;
 
-$base->handleHotelsDumpFile();
+$base->saveAmenities();

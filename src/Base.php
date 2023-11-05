@@ -4,20 +4,17 @@ namespace App;
 require_once __DIR__ . '/bootstrap.php';
 
 use App\Entity\Hotel;
-use App\Entity\Location;
 use App\Enum\FileCutType;
 use App\Helper\FileCutter;
 use App\Helper\JsonHandler;
 use App\Notify\TelegramNotifier;
-use App\RatehawkApi\RatehawkApi;
 use App\RatehawkApi\Configuration;
+use App\RatehawkApi\RatehawkApi;
 use App\Repository\HotelRepository;
 use App\Repository\LocationRepository;
 use Doctrine\ORM\EntityManager;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
-use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Tools\DsnParser;
 
 class Base
 {
@@ -198,7 +195,7 @@ class Base
 
                 //$this->saveFileHandleData();
                 //
-                if ($this->fileHandleData['lastRegion'] - $startPos > 5000) {
+                if ($this->fileHandleData['lastRegion'] - $startPos > 30000) {
 
                     throw new \Exception('');
                 }
@@ -212,7 +209,7 @@ class Base
         var_dump($time);
 
         $done = $this->fileHandleData['lastRegion'] - $startPos;
-        $this->telegramNotifier->notify('done: '. $done.' time: '.$time);
+        $this->telegramNotifier->notify('done: ' . $done . ' time: ' . $time);
         $this->saveFileHandleData();
     }
 
@@ -297,15 +294,59 @@ class Base
         $this->saveFileHandleData();
     }
 
-    protected function currentFileIsEmpty(): bool
+    protected function currentFileIsEmpty(string $fileName): bool
     {
-        $this->jsonHandler->setFile(static::STORAGE_DIR . '/Hotels_current');
+        $this->jsonHandler->setFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . $fileName);
         if ($this->jsonHandler->getItem() === []) {
             $this->fileHandleData['hotelsDumpDone'] = true;
             $this->saveFileHandleData();
         }
 
         return $this->fileHandleData['hotelsDumpDone'];
+    }
+
+    public function saveAmenities(): void
+    {
+        if ($this->currentFileIsEmpty('Hotels')) {
+            $this->telegramNotifier->notify('HOTELS DUMP IS DONE');
+            return;
+        }
+        $fileHandlingStart = microtime(true);
+        $this->jsonHandler->setFile(static::STORAGE_DIR . '/Hotels', $this->fileHandleData['lastHotel']);
+
+        $start = microtime(true);
+        $pointerTime = $start - $fileHandlingStart;
+        if ($pointerTime < 0.1) {
+            $pointerTime = 0;
+        }
+        $this->telegramNotifier->notify(sprintf('time to move pointer: %s', $pointerTime));
+        $idx = $this->fileHandleData['lastHotel'];
+        try {
+            while ($hotelData = $this->jsonHandler->getItem()) {
+                $this->hotelRepository->saveAmenities($hotelData['amenity_groups']);
+                $this->fileHandleData['lastHotel']++;
+                var_dump($this->fileHandleData['lastHotel']);
+
+
+                if (microtime(true) - $fileHandlingStart > 580) {
+
+                    $this->saveFileHandleData();
+                    $done = $this->fileHandleData['lastHotel'] - $idx;
+                    $totalIdx = $this->fileHandleData['lastHotel'];
+                    $this->telegramNotifier->notify(sprintf('DONE: %s, total: %s', $done, $totalIdx));
+                    throw new \Exception('out of 580 seconds, time ' . (microtime(true) - $fileHandlingStart));
+                }
+            }
+            if ($hotelData === []) {
+                $totalIdx = $this->fileHandleData['lastHotel'];
+                $done = $this->fileHandleData['lastHotel'] - $idx;
+                $this->telegramNotifier->notify(sprintf('DONE: %s, total: %s', $done, $totalIdx));
+                $this->saveFileHandleData();
+            }
+        } catch (\Exception $e) {
+            var_dump($e->getMessage());
+            $this->telegramNotifier->notify($e->getMessage());
+        }
     }
 
 
@@ -315,7 +356,7 @@ class Base
             $this->sliceHotelsFile();
             return;
         }
-        if ($this->currentFileIsEmpty()) {
+        if ($this->currentFileIsEmpty('Hotels_current')) {
             $this->telegramNotifier->notify('HOTELS DUMP IS DONE');
             return;
         }
@@ -329,8 +370,11 @@ class Base
         $this->telegramNotifier->notify(sprintf('time to move pointer: %s', $pointerTime));
         $i = 0;
         $idx = $this->fileHandleData['currentHotelIncrement'];
+
+        $temp = [];
         try {
             while ($hotelData = $this->jsonHandler->getItem()) {
+                $temp[] = json_encode($hotelData);
                 $this->hotelRepository->insertHotel($hotelData);
                 $i++;
                 $this->fileHandleData['currentHotelIncrement']++;
@@ -340,11 +384,13 @@ class Base
                     $this->hotelRepository->flush();
                     $this->hotelRepository->initEntities();
                     $this->saveFileHandleData();
+                    $temp = [];
 
                     $i = 0;
                 }
                 if (microtime(true) - $fileHandlingStart > 280) {
                     $this->hotelRepository->flush();
+                    $temp = [];
                     $this->saveFileHandleData();
                     $done = $this->fileHandleData['currentHotelIncrement'] - $idx;
                     $totalIdx = $this->fileHandleData['currentHotelIncrement'] + $this->fileHandleData['lastHotel'];
@@ -363,6 +409,9 @@ class Base
             }
         } catch (\Exception $e) {
             var_dump($e->getMessage());
+            if (!empty($temp)) {
+                file_put_contents(static::STORAGE_DIR . '/failed', implode(PHP_EOL, $temp) . PHP_EOL, FILE_APPEND);
+            }
             $this->telegramNotifier->notify($e->getMessage());
         }
     }

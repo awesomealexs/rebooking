@@ -39,6 +39,7 @@ class LocationRepository
                 ->setLongitude($regionData['center']['longitude'])
                 ->setCountryName($locationRegion)
                 ->setCountryCode($regionData['country_code']??'')
+                ->setType($regionData['type'])
                 ->setTitle($locationName);
 
 
