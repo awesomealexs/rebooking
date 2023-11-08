@@ -2,15 +2,11 @@
 
 namespace App\RatehawkApi;
 
-use Exception;
 use GuzzleHttp\Client as HttpClient;
-use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use GuzzleHttp\Utils;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
-use App\RatehawkApi\Constants;
-use App\RatehawkApi\Endpoints;
 
 class RatehawkApi
 {
@@ -74,49 +70,6 @@ class RatehawkApi
         }
 
         return $config;
-    }
-
-    /**
-     * Endpoints Overview
-     *
-     * The list of all available for your contract endpoints and their settings.
-     * @link https://docs.emergingtravel.com/?version=latest#1ac1095b-caec-43ce-b8f2-aea779024883
-     *
-     * @param array $options Request options to apply. See \GuzzleHttp\RequestOptions.
-     * @return OverviewResponse
-     * @throws GuzzleException
-     * @throws JsonMapper_Exception
-     */
-    public function overview(array $options = [])
-    {
-        $response = $this->httpClient->get(Endpoints::OVERVIEW);
-        return $response->getBody()->getContents();
-    }
-
-    /**
-     * Hotel Data Search
-     *
-     * Hotel data search by hotel identifier.
-     * It is supposed to be used only in case when available hotel is not included in
-     * the downloaded hotel data dump file - it can happen to new hotels in Emerging Travel Group inventory.
-     * This method can also be used for checking the content prior to reservation (with possible update).
-     * @link https://docs.emergingtravel.com/?version=latest#cbbbb393-cb06-4bfe-a007-f5b07d1cf8a3
-     *
-     * @param array{id: string, language: string} $data See \PAPI\APIv3\Models\HotelInfoRequest
-     * @param array $options Request options to apply. See \GuzzleHttp\RequestOptions
-     * @return HotelInfoResponse
-     * @throws GuzzleException
-     * @throws JsonMapper_Exception
-     * @see \PAPI\APIv3\Models\HotelInfoRequest
-     */
-    public function getHotelInfo(array $data, array $options = []): HotelInfoResponse
-    {
-        $options['body'] = json_encode($data);
-        $response = $this->httpClient->post(Endpoints::HOTEL_INFO, $options);
-        return $this->mapper->map(
-            json_decode($response->getBody(), true),
-            new HotelInfoResponse()
-        );
     }
 
     public function getRegionDump(): string

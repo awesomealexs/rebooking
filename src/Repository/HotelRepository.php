@@ -9,18 +9,14 @@ use App\Entity\HotelDescription;
 use App\Entity\HotelDescriptionGroup;
 use App\Entity\HotelImage;
 use App\Entity\Location;
-use App\Entity\Review;
 use App\Entity\Room;
 use App\Entity\RoomAmenities;
 use App\Entity\RoomImage;
 use Doctrine\ORM\EntityManager;
-use Doctrine\Persistence\ObjectRepository;
 
 class HotelRepository
 {
     protected EntityManager $entityManager;
-
-    protected ObjectRepository $repository;
 
     protected array $amenities = [];
 
@@ -33,7 +29,6 @@ class HotelRepository
     public function __construct(EntityManager $entityManager)
     {
         $this->entityManager = $entityManager;
-        $this->repository = $this->entityManager->getRepository(Review::class);
         $this->initEntities();
     }
 

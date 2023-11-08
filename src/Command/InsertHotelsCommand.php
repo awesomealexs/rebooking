@@ -3,6 +3,8 @@
 namespace App\Command;
 
 use App\Handler\HotelHandler;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,9 +20,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class InsertHotelsCommand extends Command
 {
     protected HotelHandler $hotelHandler;
-    public function __construct()
+
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->hotelHandler = new HotelHandler();
+        $this->hotelHandler = new HotelHandler($entityManager);
+
         parent::__construct();
     }
 
