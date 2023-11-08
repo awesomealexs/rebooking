@@ -32,7 +32,6 @@ class HotelsController extends AbstractController
 
     protected function checkAuth(Request $request)
     {
-        return true;
         $secret = getenv('API_AUTH_KEY');
 
         $signature = $request->headers->get('signature');
