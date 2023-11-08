@@ -2,8 +2,6 @@
 
 namespace App\Repository;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\Persistence\ObjectRepository;
 use App\Entity\Hotel;
 use App\Entity\HotelAmenities;
 use App\Entity\HotelAmenitiesGroups;
@@ -15,6 +13,8 @@ use App\Entity\Review;
 use App\Entity\Room;
 use App\Entity\RoomAmenities;
 use App\Entity\RoomImage;
+use Doctrine\ORM\EntityManager;
+use Doctrine\Persistence\ObjectRepository;
 
 class HotelRepository
 {
@@ -22,7 +22,7 @@ class HotelRepository
 
     protected ObjectRepository $repository;
 
-    protected array $amenities;
+    protected array $amenities = [];
 
     protected array $roomAmenities;
 
@@ -130,7 +130,7 @@ class HotelRepository
             ->setTitle($this->removeSpecialChars($hotelData['name']))
             ->setUri($hotelData['id'])
             ->setEmail($hotelData['email'] ?? '')
-            ->setLocation($this->locations[$hotelData['region']['id']])
+            ->setLocation(@$this->locations[$hotelData['region']['id']] ?? null)
             ->setStarRating($hotelData['star_rating'] ?? 0)
             ->setCheckIn($hotelData['check_in_time'] ?? '')
             ->setCheckOut($hotelData['check_out_time'] ?? '')

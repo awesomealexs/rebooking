@@ -4,6 +4,7 @@ namespace App;
 require_once __DIR__ . '/bootstrap.php';
 
 use App\Entity\Hotel;
+use App\Entity\Location;
 use App\Enum\FileCutType;
 use App\Helper\FileCutter;
 use App\Helper\JsonHandler;
@@ -12,6 +13,7 @@ use App\RatehawkApi\Configuration;
 use App\RatehawkApi\RatehawkApi;
 use App\Repository\HotelRepository;
 use App\Repository\LocationRepository;
+use App\Repository\NewHotelRepository;
 use Doctrine\ORM\EntityManager;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
@@ -40,11 +42,15 @@ class Base
 
     protected TelegramNotifier $telegramNotifier;
 
+    protected NewHotelRepository $newHotelRepository;
+
+    protected \mysqli $mysqli;
+
     protected array $fileHandleData;
 
     public function __construct()
     {
-
+        $start = microtime(true);
 
         $params = [
             'driver' => getenv('DB_DRIVER'),
@@ -54,37 +60,8 @@ class Base
             'host' => getenv('DB_HOST'),
             'port' => getenv('DB_PORT'),
         ];
-        //var_dump($params);die;
-        //$dsn = sprintf('mysql:dbname=%s;host=%s;port=%s',
-        //getenv('DB_NAME'),
-        //getenv('DB_HOST'),
-        //getenv('DB_PORT'),
-        //);
-        ////var_dump($dsn);die;
-        ////$dsn = 'mysql:dbname=rebooking;host=51.159.11.200;port=5353';
-        //var_dump(getenv('DB_PASSWORD'));
-        //$pdo = new \PDO($dsn, getenv('DB_USER'), getenv('DB_PASSWORD'));
-        //
-        //var_dump($pdo);
-        //$q = $pdo->query("SELECT * FROM test", \PDO::FETCH_ASSOC);
-        //$rows = $q->fetchAll();
-        //var_dump($rows);
-        //
-        //
-        //
-        //die;
 
         $isDevMode = true;
-
-        //$dsnParser = new DsnParser();
-        //$connectionParams = $dsnParser
-        //    ->parse('pdo-mysql://51.159.11.200:4486/rebooking?charset=utf8mb4');
-        //
-        //$conn = DriverManager::getConnection($connectionParams);
-
-        //$em = new EntityManager($conn, \Doctrine\ORM\Tools\Setup::createAttributeMetadataConfiguration([__DIR__ . "/Entety"]));
-        //$loc = $em->getRepository(Location::class);
-        //$loc->count(['id']);
 
         $this->entityManager = EntityManager::create($params, \Doctrine\ORM\Tools\Setup::createAttributeMetadataConfiguration([__DIR__ . "/Entity"], $isDevMode));
 
@@ -98,7 +75,7 @@ class Base
 
         $this->fileCutter = new FileCutter(static::STORAGE_DIR, $this->jsonHandler);
 
-
+        //$this->newHotelRepository = new NewHotelRepository();
         $this->hotelRepository = new HotelRepository($this->entityManager);
         $this->locationRepository = new LocationRepository($this->entityManager);
 
@@ -113,6 +90,18 @@ class Base
         ),
             static::STORAGE_DIR
         );
+        //var_dump(microtime(true) - $start);die;
+    }
+
+    protected function getMysqli(){
+
+        $this->mysqli = new \mysqli(
+            getenv('DB_HOST'),
+            getenv('DB_USER'),
+            getenv('DB_PASSWORD'),
+            getenv('DB_NAME'),
+            getenv('DB_PORT')
+        );
     }
 
     protected function initEntityManager()
@@ -123,6 +112,7 @@ class Base
             'password' => getenv('DB_PASSWORD'),
             'dbname' => getenv('DB_NAME'),
             'host' => getenv('DB_HOST'),
+            'port' => getenv('DB_PORT'),
         ];
         $isDevMode = true;
         $this->entityManager = EntityManager::create($params, \Doctrine\ORM\Tools\Setup::createAttributeMetadataConfiguration([__DIR__ . "/Ratehawk/Enteties"], $isDevMode));
@@ -235,35 +225,47 @@ class Base
     {
         //$this->telegramNotifier->notify(123);
 
-        die;
-        $json = file_get_contents(static::STORAGE_DIR . '/junk.json');
-        $data = json_decode($json, true);
-        $address = $data['address'];
+        //die;
+        //$json = file_get_contents(static::STORAGE_DIR . '/junk.json');
+        //$data = json_decode($json, true);
+        //$address = $data['address'];
+        //
+        //var_dump($address);
+        //
+        //var_dump(preg_replace('/[^а-яА-ЯёЁa-zA-Z0-9\-\,[:space:]]/u', '', $address));
+        //
+        //
+        //die;
+        //
+        //$this->jsonHandler->setFile(static::STORAGE_DIR . '/Hotels_current', $this->fileHandleData['currentHotelIncrement']);
+        //$data = $this->jsonHandler->getItem(true);
+        //var_dump($data);
+        //die;
+        //
+        //$i = 0;
+        //while ($i !== 500) {
+        //    $array[] = $this->jsonHandler->getItem();
+        //    $i++;
+        //}
+        //file_put_contents(static::STORAGE_DIR . '/dump.log', var_export($array, true));
+        //die;
+        $this->getMysqli();
+        $start = microtime(true);
+        //$this->mysqli->query("INSERT INTO hotels (location_id, uri, title, latitude, longitude, phone, email, check_in, check_out, star_rating, address, additional_information)
+        //                             values (111954, 'testurl', 'testtitle', '123', '532', '1234567879', 'test@test.test', '123', '345','5', 'test address','poshel na hui')");
+        //$q = $this->mysqli->query("SELECT * FROM hotels WHERE uri = 'aosta_bilocale_in_zona_strategica'");
+        $q = $this->mysqli->query("SELECT * FROM locations");
 
-        var_dump($address);
+        $res = $q->fetch_all();
 
-        var_dump(preg_replace('/[^а-яА-ЯёЁa-zA-Z0-9\-\,[:space:]]/u', '', $address));
-
-
-        die;
-
-        $this->jsonHandler->setFile(static::STORAGE_DIR . '/Hotels_current', $this->fileHandleData['currentHotelIncrement']);
-        $data = $this->jsonHandler->getItem(true);
-        var_dump($data);
-        die;
-
-        $i = 0;
-        while ($i !== 500) {
-            $array[] = $this->jsonHandler->getItem();
-            $i++;
-        }
-        file_put_contents(static::STORAGE_DIR . '/dump.log', var_export($array, true));
-        die;
+        var_dump(microtime(true)-$start);
+        return 1;
+        return $res;
 
         $this->initEntityManager();
         $hotelRep = $this->entityManager->getRepository(Hotel::class);
 
-        $hotel = $hotelRep->findOneBy(['uri' => 'apparthotel7sensation']);
+        $hotel = $hotelRep->findOneBy(['uri' => 'aosta_bilocale_in_zona_strategica']);
 
         $room = ($hotel->getRooms()->current());
         $images = [];
@@ -349,6 +351,58 @@ class Base
         }
     }
 
+    public function handleHotelsDumpFileTest(){
+        if ($this->fileHandleData['needToSliceHotels']) {
+            $this->sliceHotelsFile();
+            return;
+        }
+        if ($this->currentFileIsEmpty('Hotels_current')) {
+            $this->telegramNotifier->notify('HOTELS DUMP IS DONE');
+            return;
+        }
+        $fileHandlingStart = microtime(true);
+        $this->jsonHandler->setFile(static::STORAGE_DIR . '/Hotels_current', $this->fileHandleData['currentHotelIncrement']);
+        $start = microtime(true);
+        $pointerTime = $start - $fileHandlingStart;
+        if ($pointerTime < 0.1) {
+            $pointerTime = 0;
+        }
+        $this->telegramNotifier->notify(sprintf('time to move pointer: %s', $pointerTime));
+        $idx = $this->fileHandleData['currentHotelIncrement'];
+
+        $temp = [];
+        while ($hotelData = $this->jsonHandler->getItem()) {
+            try{
+                $temp = json_encode($hotelData);
+                $this->newHotelRepository->insertHotel($hotelData);
+                $this->fileHandleData['currentHotelIncrement']++;
+                var_dump($this->fileHandleData['currentHotelIncrement']);
+                $this->saveFileHandleData();
+            } catch (\Exception $e){
+                var_dump($e->getMessage());
+                file_put_contents(static::STORAGE_DIR . '/failed', $temp . PHP_EOL, FILE_APPEND);
+                $this->telegramNotifier->notify($e->getMessage());
+            }
+
+
+            if (microtime(true) - $fileHandlingStart > 280) {
+                $done = $this->fileHandleData['currentHotelIncrement'] - $idx;
+                $totalIdx = $this->fileHandleData['currentHotelIncrement'] + $this->fileHandleData['lastHotel'];
+                $this->telegramNotifier->notify(sprintf('DONE: %s, file offset: %s, total: %s', $done, $this->fileHandleData['currentHotelIncrement'], $totalIdx));
+                $this->telegramNotifier->notify('out of 280 seconds, time ' . (microtime(true) - $fileHandlingStart));
+                return;
+            }
+        }
+        if ($hotelData === []) {
+            $totalIdx = $this->fileHandleData['currentHotelIncrement'] + $this->fileHandleData['lastHotel'];
+            $this->fileHandleData['lastHotel'] += $this->fileHandleData['currentHotelIncrement'];
+            $this->fileHandleData['needToSliceHotels'] = true;
+            $done = $this->fileHandleData['currentHotelIncrement'] - $idx;
+            $this->telegramNotifier->notify(sprintf('DONE: %s, file offset: %s, total: %s', $done, $this->fileHandleData['currentHotelIncrement'], $totalIdx));
+            $this->saveFileHandleData();
+        }
+    }
+
 
     public function handleHotelsDumpFile()
     {
@@ -380,7 +434,7 @@ class Base
                 $this->fileHandleData['currentHotelIncrement']++;
                 var_dump($this->fileHandleData['currentHotelIncrement']);
 
-                if ($i === 100) {
+                if ($i === 300) {
                     $this->hotelRepository->flush();
                     $this->hotelRepository->initEntities();
                     $this->saveFileHandleData();
@@ -388,14 +442,14 @@ class Base
 
                     $i = 0;
                 }
-                if (microtime(true) - $fileHandlingStart > 540) {
+                if (microtime(true) - $fileHandlingStart > 265) {
                     $this->hotelRepository->flush();
                     $temp = [];
                     $this->saveFileHandleData();
                     $done = $this->fileHandleData['currentHotelIncrement'] - $idx;
                     $totalIdx = $this->fileHandleData['currentHotelIncrement'] + $this->fileHandleData['lastHotel'];
                     $this->telegramNotifier->notify(sprintf('DONE: %s, file offset: %s, total: %s', $done, $this->fileHandleData['currentHotelIncrement'], $totalIdx));
-                    throw new \Exception('out of 540 seconds, time ' . (microtime(true) - $fileHandlingStart));
+                    throw new \Exception('out of 265 seconds, time ' . (microtime(true) - $fileHandlingStart));
                 }
             }
             if ($hotelData === []) {
@@ -408,6 +462,7 @@ class Base
                 $this->saveFileHandleData();
             }
         } catch (\Exception $e) {
+            $this->saveFileHandleData();
             var_dump($e->getMessage());
             if (!empty($temp)) {
                 file_put_contents(static::STORAGE_DIR . '/failed', implode(PHP_EOL, $temp) . PHP_EOL, FILE_APPEND);

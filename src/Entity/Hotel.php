@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\InverseJoinColumn;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\JoinTable;
@@ -21,6 +22,7 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
 #[Entity]
 #[Table('hotels')]
 #[UniqueConstraint(columns: ["uri"])]
+#[Index(columns: ["location_id","star_rating","id"], name: 'hotels_star_rating_search')]
 class Hotel
 {
     #[Id]
