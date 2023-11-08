@@ -12,11 +12,11 @@ use App\Entity\Location;
 use App\Entity\Room;
 use App\Entity\RoomAmenities;
 use App\Entity\RoomImage;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 class HotelRepository
 {
-    protected EntityManager $entityManager;
+    protected EntityManagerInterface $entityManager;
 
     protected array $amenities = [];
 
@@ -26,7 +26,7 @@ class HotelRepository
 
     protected array $locations;
 
-    public function __construct(EntityManager $entityManager)
+    public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
         $this->initEntities();

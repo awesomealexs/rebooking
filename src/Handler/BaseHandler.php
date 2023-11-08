@@ -9,11 +9,9 @@ use App\RatehawkApi\Configuration;
 use App\RatehawkApi\RatehawkApi;
 use App\Repository\HotelRepository;
 use App\Repository\LocationRepository;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
-use Symfony\Component\Dotenv\Dotenv;
 
 abstract class BaseHandler
 {
@@ -39,8 +37,8 @@ abstract class BaseHandler
 
     protected TelegramNotifier $telegramNotifier;
 
-    public function __construct(EntityManagerInterface $entityManager){
-        ini_set('memory_limit', '1G');
+    public function __construct(EntityManagerInterface $entityManager)
+    {
         $this->entityManager = $entityManager;
 
         $logDir = static::BASE_DIR . '/Logs/ApiLog';

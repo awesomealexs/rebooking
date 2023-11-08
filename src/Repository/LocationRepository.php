@@ -3,13 +3,13 @@
 namespace App\Repository;
 
 use App\Entity\Location;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 class LocationRepository
 {
-    protected EntityManager $entityManager;
+    protected EntityManagerInterface $entityManager;
 
-    public function __construct(EntityManager $entityManager)
+    public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
     }
