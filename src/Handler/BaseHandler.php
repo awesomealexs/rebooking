@@ -12,6 +12,7 @@ use App\Repository\LocationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
+use App\Entity\Location;
 
 abstract class BaseHandler
 {
@@ -49,12 +50,12 @@ abstract class BaseHandler
         $this->logger->pushHandler($handler);
 
         $this->jsonHandler = new JsonHandler();
-        //
+
         $this->fileCutter = new FileCutter(static::STORAGE_DIR, $this->jsonHandler);
 
         $this->hotelRepository = new HotelRepository($this->entityManager);
         $this->locationRepository = new LocationRepository($this->entityManager);
-        //
+
         $this->telegramNotifier = new TelegramNotifier();
 
         $this->initFileHandleData();

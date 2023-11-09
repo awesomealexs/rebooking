@@ -71,7 +71,7 @@ class HotelsController extends AbstractController
             ->select('h.id')
             ->from('App\Entity\Hotel', 'h')
             ->where('h.locationId=?1')
-            ->orderBy('h.starRating', 'DESC')
+            //->orderBy('h.starRating', 'DESC')
             ->setParameter(1, $locationId)
             ->setFirstResult($perPage * $page)
             ->setMaxResults($perPage)
