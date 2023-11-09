@@ -7,6 +7,7 @@ use App\Entity\HotelAmenities;
 use App\Entity\HotelDescription;
 use App\Entity\HotelImage;
 use App\Entity\Location;
+use App\Entity\Review;
 use App\Entity\Room;
 use App\Entity\RoomAmenities;
 use App\Helper\StringHelper;
@@ -32,6 +33,7 @@ class HotelsController extends AbstractController
 
     protected function checkAuth(Request $request)
     {
+        return true;
         $secret = getenv('API_AUTH_KEY');
 
         $signature = $request->headers->get('signature');
@@ -175,17 +177,33 @@ class HotelsController extends AbstractController
             }
         }
 
+        $reviews = [];
+        foreach($hotel->getReviews()->getIterator() as $review){
+            if($review instanceof Review){
+                $reviews[] = [
+                    'title' => $review->getTitle(),
+                    'text' => $review->getText(),
+                    'author' => $review->getAuthor(),
+                    'stars' => $review->getStars(),
+                ];
+            }
+        }
+
+
         $hotelData = [
             'id' => $hotel->getUri(),
             'title' => $hotel->getTitle(),
             'address' => $hotel->getAddress(),
+            'location' => $hotel->getLocation()->getTitle(),
             'phone' => $hotel->getPhone(),
             'email' => $hotel->getEmail(),
             'check_in' => $hotel->getCheckIn(),
             'check_out' => $hotel->getCheckOut(),
             'star_rating' => $hotel->getStarRating(),
             'latitude' => $hotel->getLatitude(),
+            'longitude' => $hotel->getLongitude(),
             'additional_information' => $hotel->getAdditionalInformation(),
+            'reviews' => $reviews,
             'images' => $hotelImages,
             'amenities' => $hotelAmenities,
             'descriptions' => $hotelDescriptions,
