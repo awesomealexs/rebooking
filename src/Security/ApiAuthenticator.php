@@ -1,88 +1,76 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Security;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
+use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
+use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
-class ApiAuthenticator
+class ApiAuthenticator extends AbstractAuthenticator
 {
 
-    public function __construct()
-    {
-    }
-
-    public function supports(Request $request): bool
+    public function supports(Request $request): ?bool
     {
         return true;
     }
 
-    public function getCredentials(Request $request)
+    public function authenticate(Request $request): Passport
     {
-        return [
-            'signature' => $request->headers->get('signature'),
-            'timestamp' => $request->headers->get('timestamp'),
-        ];
-    }
+        //if (!$this->checkAuth($request)) {
+        //    return $this->json([
+        //        'success' => false,
+        //        'message' => 'auth failed'
+        //    ], 401);
+        //}
 
-    public function getUser($credentials, UserProviderInterface $userProvider): ?UserInterface
-    {
-        if (null === $credentials) {
-            // The token header was empty, authentication fails with HTTP Status
-            // Code 401 "Unauthorized"
-            return null;
+        $secret = getenv('API_AUTH_KEY');
+        $time = time();
+
+
+        $signature = $request->headers->get('signature');
+
+        $timestamp = $request->headers->get('timestamp');
+
+        if (null === $signature) {
+            throw new CustomUserMessageAuthenticationException('No signature provided');
         }
 
-        // The "username" in this case is the apiToken, see the key `property`
-        // of `your_db_provider` in `security.yaml`.
-        // If this returns a user, checkCredentials() is called next:
-        return $userProvider->loadUserByUsername($credentials);
+        if (null === $timestamp) {
+            throw new CustomUserMessageAuthenticationException('No timestamp provided');
+        }
+        if ((time() - (int)$timestamp) > 5) {
+            throw new CustomUserMessageAuthenticationException('Timestamp too old provided');
+        }
+
+        if (md5(getenv('API_AUTH_KEY') . $timestamp) !== $signature) {
+            throw new CustomUserMessageAuthenticationException('Wrong signature provided');
+        }
+
+        return new SelfValidatingPassport(new UserBadge($signature, fn() => new User()));
     }
 
-    public function checkCredentials($credentials, UserInterface $user): bool
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        // Check credentials - e.g. make sure the password is valid.
-        // In case of an API token, no credential check is needed.
-
-        // Return `true` to cause authentication success
-        return true;
-    }
-
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $providerKey): ?Response
-    {
-        // on success, let the request continue
         return null;
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         $data = [
-            // you may want to customize or obfuscate the message first
-            'message' => strtr($exception->getMessageKey(), $exception->getMessageData())
-
-            // or to translate this message
-            // $this->translator->trans($exception->getMessageKey(), $exception->getMessageData())
+            'success' => false,
+            'message' => strtr($exception->getMessageKey(), $exception->getMessageData()),
+            'headers' => $request->headers->all(),
         ];
 
         return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
-    }
-
-    /**
-     * Called when authentication is needed, but it's not sent
-     */
-    public function start(Request $request, AuthenticationException $authException = null): Response
-    {
-        $data = [
-            // you might translate this message
-            'message' => 'Authentication Required'
-        ];
-
-        return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
-    }
-
-    public function supportsRememberMe(): bool
-    {
-        return false;
     }
 }

@@ -16,6 +16,7 @@ use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class HotelsController extends AbstractController
@@ -31,31 +32,9 @@ class HotelsController extends AbstractController
         $this->entityManager = $entityManager;
     }
 
-    protected function checkAuth(Request $request)
-    {
-        return true;
-        $secret = getenv('API_AUTH_KEY');
-
-        $signature = $request->headers->get('signature');
-        $timestamp = $request->headers->get('timestamp');
-
-        if ((time() - (int)$timestamp) > 500) {
-            return false;
-        }
-
-        return md5($secret . $timestamp) === $signature;
-    }
-
     #[Route('/hotels2loc/{location}', name: 'app_hotels_by_oc', methods: ["GET"])]
     public function hotelsByLocations(Request $request, $location): JsonResponse
     {
-        if (!$this->checkAuth($request)) {
-            return $this->json([
-                'success' => false,
-                'message' => 'auth failed'
-            ], 401);
-        }
-
         $locationRep = $this->entityManager->getRepository(Location::class);
         $locations = $locationRep->findBy([
             'title' => $location,
@@ -120,20 +99,13 @@ class HotelsController extends AbstractController
     #[Route('/hotel/{uri}', name: 'app_hotels', methods: ["GET"])]
     public function hotelInfo(Request $request, $uri): JsonResponse
     {
-        if (!$this->checkAuth($request)) {
-            return $this->json([
-                'success' => false,
-                'message' => 'auth failed'
-            ], 401);
-        }
-
         $hotelRepository = $this->entityManager->getRepository(Hotel::class);
         $hotel = ($hotelRepository->findOneBy(['uri' => $uri]));
-        if($hotel === null){
+        if ($hotel === null) {
             return $this->json([
                 'success' => false,
                 'message' => 'not found'
-            ], 404);
+            ], Response::HTTP_NOT_FOUND);
         }
 
         $rooms = [];
@@ -178,8 +150,8 @@ class HotelsController extends AbstractController
         }
 
         $reviews = [];
-        foreach($hotel->getReviews()->getIterator() as $review){
-            if($review instanceof Review){
+        foreach ($hotel->getReviews()->getIterator() as $review) {
+            if ($review instanceof Review) {
                 $reviews[] = [
                     'title' => $review->getTitle(),
                     'text' => $review->getText(),
