@@ -25,17 +25,6 @@ class ApiAuthenticator extends AbstractAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        //if (!$this->checkAuth($request)) {
-        //    return $this->json([
-        //        'success' => false,
-        //        'message' => 'auth failed'
-        //    ], 401);
-        //}
-
-        $secret = getenv('API_AUTH_KEY');
-        $time = time();
-
-
         $signature = $request->headers->get('signature');
 
         $timestamp = $request->headers->get('timestamp');
@@ -55,7 +44,7 @@ class ApiAuthenticator extends AbstractAuthenticator
             throw new CustomUserMessageAuthenticationException('Wrong signature provided');
         }
 
-        return new SelfValidatingPassport(new UserBadge($signature, fn() => new User()));
+        return new SelfValidatingPassport(new UserBadge('', fn() => new User()));
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
