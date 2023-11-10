@@ -37,7 +37,7 @@ class ApiAuthenticator extends AbstractAuthenticator
             throw new CustomUserMessageAuthenticationException('No timestamp provided');
         }
         if ((time() - (int)$timestamp) > 5) {
-            throw new CustomUserMessageAuthenticationException('Timestamp too old provided');
+            throw new CustomUserMessageAuthenticationException('Too old timestamp provided');
         }
 
         if (md5(getenv('API_AUTH_KEY') . $timestamp) !== $signature) {
