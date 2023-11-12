@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Security;
 
+use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,6 +26,12 @@ class ApiAuthenticator extends AbstractAuthenticator
 
     public function authenticate(Request $request): Passport
     {
+        $dotenv = new Dotenv();
+        $dotenv
+            ->usePutenv()
+            ->bootEnv(dirname(__DIR__, 2) . '/.env');
+
+
         $signature = $request->headers->get('signature');
 
         $timestamp = $request->headers->get('timestamp');
