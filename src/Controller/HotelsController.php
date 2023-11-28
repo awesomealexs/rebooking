@@ -91,7 +91,10 @@ class HotelsController extends AbstractController
 
         return $this->json([
             'success' => true,
-            'data' => $hotels
+            'data' => [
+                'region_id' => $locationId,
+                'hotels' => $hotels,
+                ],
         ]);
     }
 
@@ -166,6 +169,7 @@ class HotelsController extends AbstractController
             'id' => $hotel->getUri(),
             'title' => $hotel->getTitle(),
             'address' => $hotel->getAddress(),
+            'region_id' => $hotel->getLocation()->getRateHawkId(),
             'location' => $hotel->getLocation()->getTitle(),
             'phone' => $hotel->getPhone(),
             'email' => $hotel->getEmail(),
