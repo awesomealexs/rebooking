@@ -2,7 +2,7 @@
 
 namespace App\Handler;
 
-use App\Dto\FileHandleData;
+use JsonMachine\Items;
 
 class ReviewHandler extends BaseHandler
 {
@@ -29,8 +29,16 @@ class ReviewHandler extends BaseHandler
 
     public function handleReviewsFile()
     {
-        $t = json_decode(static::STORAGE_DIR.DIRECTORY_SEPARATOR.self::REVIEWS_FILE_NAME, true);
+        $t = Items::fromFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . self::REVIEWS_FILE_NAME);
 
-        var_dump(array_keys($t));
+        foreach($t as $name => $value){
+            if($value === null){
+                continue;
+            }
+            var_dump($name);
+            var_dump($value);
+            //file_put_contents(static::STORAGE_DIR.'/asdsa', json_encode($value));
+            die;
+        }
     }
 }
