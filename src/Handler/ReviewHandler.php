@@ -2,7 +2,7 @@
 
 namespace App\Handler;
 
-use App\Enum\FileCutType;
+use App\Dto\FileHandleData;
 
 class ReviewHandler extends BaseHandler
 {
@@ -25,5 +25,12 @@ class ReviewHandler extends BaseHandler
             $this->logger->error($e->getMessage());
             return false;
         }
+    }
+
+    public function handleReviewsFile()
+    {
+        $t = json_decode(static::STORAGE_DIR.DIRECTORY_SEPARATOR.self::REVIEWS_FILE_NAME, true);
+
+        var_dump(array_keys($t));
     }
 }

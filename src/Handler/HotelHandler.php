@@ -15,12 +15,12 @@ class HotelHandler extends BaseHandler
         $start = microtime(true);
         $this->telegramNotifier->notify('slicing hotels file');
         $this->fileCutter
-            ->setFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::HOTELS_FILE_NAME, $this->fileHandleData['lastHotel'], FileCutType::Hotels)
+            ->setFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::HOTELS_FILE_NAME, $this->fileHandleData->getLastHotel(), FileCutType::Hotels)
             ->sliceCurrentFile();
 
         $this->telegramNotifier->notify('slicing done in ' . (microtime(true) - $start));
-        $this->fileHandleData['needToSliceHotels'] = false;
-        $this->fileHandleData['currentHotelIncrement'] = 0;
+        $this->fileHandleData->setNeedToSliceHotels(false);
+        $this->fileHandleData->setCurrentHotelIncrement(0);
         $this->saveFileHandleData();
     }
 
@@ -28,16 +28,16 @@ class HotelHandler extends BaseHandler
     {
         $this->jsonHandler->setFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . $fileName);
         if ($this->jsonHandler->getItem() === []) {
-            $this->fileHandleData['hotelsDumpDone'] = true;
+            $this->fileHandleData->setHotelsDumpDone(true);
             $this->saveFileHandleData();
         }
 
-        return $this->fileHandleData['hotelsDumpDone'];
+        return $this->fileHandleData->isHotelsDumpDone();
     }
 
     public function handleHotelsDumpFile()
     {
-        if ($this->fileHandleData['needToSliceHotels']) {
+        if ($this->fileHandleData->isNeedToSliceHotels()) {
             $this->sliceHotelsFile();
             return;
         }
@@ -46,7 +46,7 @@ class HotelHandler extends BaseHandler
             return;
         }
         $fileHandlingStart = microtime(true);
-        $this->jsonHandler->setFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::HOTELS_CURRENT_FILE_NAME, $this->fileHandleData['currentHotelIncrement']);
+        $this->jsonHandler->setFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::HOTELS_CURRENT_FILE_NAME, $this->fileHandleData->getCurrentHotelIncrement());
         $start = microtime(true);
         $pointerTime = $start - $fileHandlingStart;
         if ($pointerTime < 0.1) {
@@ -54,7 +54,7 @@ class HotelHandler extends BaseHandler
         }
         $this->telegramNotifier->notify(sprintf('time to move pointer: %s', $pointerTime));
         $i = 0;
-        $idx = $this->fileHandleData['currentHotelIncrement'];
+        $idx = $this->fileHandleData->getCurrentHotelIncrement();
 
         $temp = [];
         try {
@@ -62,8 +62,8 @@ class HotelHandler extends BaseHandler
                 $temp[] = json_encode($hotelData);
                 $this->hotelRepository->insertHotel($hotelData);
                 $i++;
-                $this->fileHandleData['currentHotelIncrement']++;
-                var_dump($this->fileHandleData['currentHotelIncrement']);
+                $this->fileHandleData->incrementCurrentHotel();
+                var_dump($this->fileHandleData->getCurrentHotelIncrement());
 
                 if ($i === 300) {
                     $this->hotelRepository->flush();
@@ -77,19 +77,20 @@ class HotelHandler extends BaseHandler
                     $this->hotelRepository->flush();
                     $temp = [];
                     $this->saveFileHandleData();
-                    $done = $this->fileHandleData['currentHotelIncrement'] - $idx;
-                    $totalIdx = $this->fileHandleData['currentHotelIncrement'] + $this->fileHandleData['lastHotel'];
-                    $this->telegramNotifier->notify(sprintf('DONE: %s, file offset: %s, total: %s', $done, $this->fileHandleData['currentHotelIncrement'], $totalIdx));
+                    $done = $this->fileHandleData->getCurrentHotelIncrement() - $idx;
+                    $totalIdx = $this->fileHandleData->getCurrentHotelIncrement() + $this->fileHandleData->getLastHotel();
+                    $this->telegramNotifier->notify(sprintf('DONE: %s, file offset: %s, total: %s', $done, $this->fileHandleData->getCurrentHotelIncrement(), $totalIdx));
                     throw new \Exception('out of 265 seconds, time ' . (microtime(true) - $fileHandlingStart));
                 }
             }
             if ($hotelData === []) {
-                $totalIdx = $this->fileHandleData['currentHotelIncrement'] + $this->fileHandleData['lastHotel'];
-                $this->fileHandleData['lastHotel'] += $this->fileHandleData['currentHotelIncrement'];
-                $this->fileHandleData['needToSliceHotels'] = true;
+                $totalIdx = $this->fileHandleData->getCurrentHotelIncrement() + $this->fileHandleData->getLastHotel();
+                $lastHotel = $this->fileHandleData->getLastHotel() + $this->fileHandleData->getCurrentHotelIncrement();
+                $this->fileHandleData->setLastHotel($lastHotel);
+                $this->fileHandleData->setNeedToSliceHotels(true);
                 $this->hotelRepository->flush();
-                $done = $this->fileHandleData['currentHotelIncrement'] - $idx;
-                $this->telegramNotifier->notify(sprintf('DONE: %s, file offset: %s, total: %s', $done, $this->fileHandleData['currentHotelIncrement'], $totalIdx));
+                $done = $this->fileHandleData->getCurrentHotelIncrement() - $idx;
+                $this->telegramNotifier->notify(sprintf('DONE: %s, file offset: %s, total: %s', $done, $this->fileHandleData->getCurrentHotelIncrement(), $totalIdx));
                 $this->saveFileHandleData();
             }
         } catch (\Exception $e) {
@@ -127,7 +128,7 @@ class HotelHandler extends BaseHandler
             return;
         }
         $fileHandlingStart = microtime(true);
-        $this->jsonHandler->setFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::HOTELS_FILE_NAME, $this->fileHandleData['lastHotel']);
+        $this->jsonHandler->setFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::HOTELS_FILE_NAME, $this->fileHandleData->getLastHotel());
 
         $start = microtime(true);
         $pointerTime = $start - $fileHandlingStart;
@@ -135,26 +136,28 @@ class HotelHandler extends BaseHandler
             $pointerTime = 0;
         }
         $this->telegramNotifier->notify(sprintf('time to move pointer: %s', $pointerTime));
-        $idx = $this->fileHandleData['lastHotel'];
+        $idx = $this->fileHandleData->getLastHotel();
         try {
             while ($hotelData = $this->jsonHandler->getItem()) {
                 $this->hotelRepository->saveAmenities($hotelData['amenity_groups']);
-                $this->fileHandleData['lastHotel']++;
-                var_dump($this->fileHandleData['lastHotel']);
+                $hotelIdx = $this->fileHandleData->getLastHotel();
+                $hotelIdx++;
+                $this->fileHandleData->setLastHotel($hotelIdx);
+                var_dump($this->fileHandleData->getLastHotel());
 
 
                 if (microtime(true) - $fileHandlingStart > 980) {
 
                     $this->saveFileHandleData();
-                    $done = $this->fileHandleData['lastHotel'] - $idx;
-                    $totalIdx = $this->fileHandleData['lastHotel'];
+                    $done = $this->fileHandleData->getLastHotel() - $idx;
+                    $totalIdx = $this->fileHandleData->getLastHotel();
                     $this->telegramNotifier->notify(sprintf('DONE: %s, total: %s', $done, $totalIdx));
                     throw new \Exception('out of 980 seconds, time ' . (microtime(true) - $fileHandlingStart));
                 }
             }
             if ($hotelData === []) {
-                $totalIdx = $this->fileHandleData['lastHotel'];
-                $done = $this->fileHandleData['lastHotel'] - $idx;
+                $totalIdx = $this->fileHandleData->getLastHotel();
+                $done = $this->fileHandleData->getLastHotel() - $idx;
                 $this->telegramNotifier->notify(sprintf('DONE: %s, total: %s', $done, $totalIdx));
                 $this->saveFileHandleData();
             }

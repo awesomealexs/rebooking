@@ -47,7 +47,7 @@ class InsertReviewsCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $arg1 = $input->getArgument('arg1');
 
-        $this->reviewHandler->getReviewsDumpFile();
+        $this->reviewHandler->handleReviewsFile();
 
         return Command::SUCCESS;
     }

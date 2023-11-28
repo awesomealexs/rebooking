@@ -2,6 +2,7 @@
 
 namespace App\Handler;
 
+use App\Dto\FileHandleData;
 use App\Helper\FileCutter;
 use App\Helper\JsonHandler;
 use App\Notify\TelegramNotifier;
@@ -12,7 +13,6 @@ use App\Repository\LocationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
-use App\Entity\Location;
 
 abstract class BaseHandler
 {
@@ -20,7 +20,7 @@ abstract class BaseHandler
 
     public const STORAGE_DIR = self::BASE_DIR . '/src/Storage';
 
-    protected const FILE_HANDLE_PATH = self::STORAGE_DIR . '/fileHandle.json';
+    protected const FILE_HANDLE_PATH = self::STORAGE_DIR . '/fileHandle';
 
     protected RatehawkApi $rateHawkApi;
 
@@ -37,6 +37,8 @@ abstract class BaseHandler
     protected FileCutter $fileCutter;
 
     protected TelegramNotifier $telegramNotifier;
+
+    protected FileHandleData $fileHandleData;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
@@ -71,38 +73,15 @@ abstract class BaseHandler
 
     protected function initFileHandleData(): void
     {
-        try {
-            if (is_file(static::FILE_HANDLE_PATH)) {
-                $this->fileHandleData = json_decode(file_get_contents(static::FILE_HANDLE_PATH), true, 512, JSON_THROW_ON_ERROR);
-            }
-            if (!isset($this->fileHandleData['lastRegion'])) {
-                $this->fileHandleData['lastRegion'] = 0;
-            }
-            if (!isset($this->fileHandleData['lastHotel'])) {
-                $this->fileHandleData['lastHotel'] = 0;
-            }
-            if (!isset($this->fileHandleData['needToSliceHotels'])) {
-                $this->fileHandleData['needToSliceHotels'] = true;
-            }
-            if (!isset($this->fileHandleData['hotelsDumpDone'])) {
-                $this->fileHandleData['hotelsDumpDone'] = false;
-            }
-            if (!isset($this->fileHandleData['currentHotelIncrement'])) {
-                $this->fileHandleData['currentHotelIncrement'] = 0;
-            }
-        } catch (\Exception $e) {
-            $this->fileHandleData = [
-                'lastRegion' => 0,
-                'lastHotel' => 0,
-                'needToSliceHotels' => false,
-                'hotelsDumpDone' => false,
-                'currentHotelIncrement' => 0,
-            ];
+        if (is_file(static::FILE_HANDLE_PATH)) {
+            $this->fileHandleData = unserialize(file_get_contents(static::FILE_HANDLE_PATH), ['allowed_classes' => [FileHandleData::class]]);
+            return;
         }
+        $this->fileHandleData = new FileHandleData();
     }
 
     protected function saveFileHandleData(): void
     {
-        file_put_contents(static::FILE_HANDLE_PATH, json_encode($this->fileHandleData));
+        file_put_contents(static::FILE_HANDLE_PATH, serialize($this->fileHandleData));
     }
 }

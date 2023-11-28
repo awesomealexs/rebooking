@@ -27,14 +27,14 @@ class LocationHandler extends BaseHandler
     {
         $start = microtime(true);
         $this->jsonHandler->setFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR.static::LOCATIONS_FILE_NAME, $this->fileHandleData['lastRegion']);
-        $startPos = $this->fileHandleData['lastRegion'];
+        $startPos = $this->fileHandleData->getLastRegion();
         try {
             while ($regionData = $this->jsonHandler->getItem()) {
                 $this->locationRepository->insertRegion($regionData);
-                $this->fileHandleData['lastRegion']++;
-                var_dump($this->fileHandleData['lastRegion']);
+                $this->fileHandleData->incrementLastRegion();
+                var_dump($this->fileHandleData->getLastRegion());
 
-                if ($this->fileHandleData['lastRegion'] - $startPos > 30000) {
+                if ($this->fileHandleData->getLastRegion() - $startPos > 30000) {
 
                     throw new \Exception('');
                 }
@@ -47,7 +47,7 @@ class LocationHandler extends BaseHandler
         $time = microtime(true) - $start;
         var_dump($time);
 
-        $done = $this->fileHandleData['lastRegion'] - $startPos;
+        $done = $this->fileHandleData->getLastRegion() - $startPos;
         $this->telegramNotifier->notify('done: ' . $done . ' time: ' . $time);
         $this->saveFileHandleData();
     }
