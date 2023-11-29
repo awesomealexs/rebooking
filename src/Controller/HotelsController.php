@@ -159,6 +159,16 @@ class HotelsController extends AbstractController
 
         foreach($hotel2?->getReviews()->getIterator() as $review){
             if($review instanceof Review){
+                $reviews['rating'] = $hotel2?->getClientRating();
+                $reviews['detailed_ratings']['cleanness'] = $hotel2?->getCleannessRating();
+                $reviews['detailed_ratings']['location'] = $hotel2?->getLocationRating();
+                $reviews['detailed_ratings']['price'] = $hotel2?->getPriceRating();
+                $reviews['detailed_ratings']['services'] = $hotel2?->getServicesRating();
+                $reviews['detailed_ratings']['room'] = $hotel2?->getRoomRating();
+                $reviews['detailed_ratings']['meal'] = $hotel2?->getMealRating();
+                $reviews['detailed_ratings']['wifi'] = $hotel2?->getWifiRating();
+                $reviews['detailed_ratings']['hygiene'] = $hotel2?->getHygieneRating();
+
                 $reviews['reviews'][] = [
                     'review_plus' => $review->getReviewPlus(),
                     'review_minus' => $review->getReviewMinus(),
