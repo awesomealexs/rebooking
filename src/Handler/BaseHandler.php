@@ -10,6 +10,7 @@ use App\RatehawkApi\Configuration;
 use App\RatehawkApi\RatehawkApi;
 use App\Repository\HotelRepository;
 use App\Repository\LocationRepository;
+use App\Repository\ReviewRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
@@ -34,6 +35,8 @@ abstract class BaseHandler
 
     protected LocationRepository $locationRepository;
 
+    protected ReviewRepository $reviewRepository;
+
     protected FileCutter $fileCutter;
 
     protected TelegramNotifier $telegramNotifier;
@@ -57,6 +60,7 @@ abstract class BaseHandler
 
         $this->hotelRepository = new HotelRepository($this->entityManager);
         $this->locationRepository = new LocationRepository($this->entityManager);
+        $this->reviewRepository = new ReviewRepository($this->entityManager);
 
         $this->telegramNotifier = new TelegramNotifier();
 

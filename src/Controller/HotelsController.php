@@ -153,16 +153,11 @@ class HotelsController extends AbstractController
         }
 
         $reviews = [];
-        foreach ($hotel->getReviews()->getIterator() as $review) {
-            if ($review instanceof Review) {
-                $reviews[] = [
-                    'title' => $review->getTitle(),
-                    'text' => $review->getText(),
-                    'author' => $review->getAuthor(),
-                    'stars' => $review->getStars(),
-                ];
-            }
-        }
+
+
+        $hotel2 = $hotelRepository->findOneBy(['uri' => 'ozgur_bey_spa_hotel_']);
+
+        $reviews = 1;
 
 
         $hotelData = [

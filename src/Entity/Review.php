@@ -57,29 +57,29 @@ class Review
     #[Column(type: Types::DECIMAL, nullable: true)]
     private ?float $rating;
 
-    #[Column(nullable: true)]
-    private ?int $cleanness;
+    #[Column(name: 'cleanness_rating', nullable: true)]
+    private ?int $cleannessRating;
 
-    #[Column(nullable: true)]
-    private ?int $location;
+    #[Column(name: 'location_rating', nullable: true)]
+    private ?int $locationRating;
 
-    #[Column(nullable: true)]
-    private ?int $price;
+    #[Column(name: 'price_rating', nullable: true)]
+    private ?int $priceRating;
 
-    #[Column(nullable: true)]
-    private ?int $services;
+    #[Column(name: 'services_rating', nullable: true)]
+    private ?int $servicesRating;
 
-    #[Column(nullable: true)]
-    private ?int $room;
+    #[Column(name: 'room_rating', nullable: true)]
+    private ?int $roomRating;
 
-    #[Column(nullable: true)]
-    private ?int $meal;
+    #[Column(name: 'meal_rating', nullable: true)]
+    private ?int $mealRating;
 
-    #[Column(nullable: true)]
-    private ?string $wifi;
+    #[Column(name: 'wifi_rating', nullable: true)]
+    private ?string $wifiRating;
 
-    #[Column(nullable: true)]
-    private ?string $hygiene;
+    #[Column(name: 'hygiene_rating', nullable: true)]
+    private ?string $hygieneRating;
 
     #[ManyToOne(targetEntity: Hotel::class, inversedBy: 'reviews', cascade: ['persist', 'remove'])]
     #[JoinColumn(referencedColumnName: 'id')]
@@ -245,81 +245,92 @@ class Review
         return $this;
     }
 
-
-    public function getCleanness(): ?int
+    public function getCleannessRating(): ?int
     {
-        return $this->cleanness;
+        return $this->cleannessRating;
     }
 
-    public function setCleanness(?int $cleanness): Review
+    public function setCleannessRating(?int $cleannessRating): Review
     {
-        $this->cleanness = $cleanness;
+        $this->cleannessRating = $cleannessRating;
         return $this;
     }
 
-    public function getLocation(): ?int
+    public function getLocationRating(): ?int
     {
-        return $this->location;
+        return $this->locationRating;
     }
 
-    public function setLocation(?int $location): Review
+    public function setLocationRating(?int $locationRating): Review
     {
-        $this->location = $location;
+        $this->locationRating = $locationRating;
         return $this;
     }
 
-    public function getPrice(): ?int
+    public function getPriceRating(): ?int
     {
-        return $this->price;
+        return $this->priceRating;
     }
 
-    public function setPrice(?int $price): Review
+    public function setPriceRating(?int $priceRating): Review
     {
-        $this->price = $price;
+        $this->priceRating = $priceRating;
         return $this;
     }
 
-    public function getServices(): ?int
+    public function getServicesRating(): ?int
     {
-        return $this->services;
+        return $this->servicesRating;
     }
 
-    public function setServices(?int $services): Review
+    public function setServicesRating(?int $servicesRating): Review
     {
-        $this->services = $services;
+        $this->servicesRating = $servicesRating;
         return $this;
     }
 
-    public function getRoom(): ?int
+    public function getRoomRating(): ?int
     {
-        return $this->room;
+        return $this->roomRating;
     }
 
-    public function setRoom(?int $room): Review
+    public function setRoomRating(?int $roomRating): Review
     {
-        $this->room = $room;
+        $this->roomRating = $roomRating;
         return $this;
     }
 
-    public function getMeal(): ?int
+    public function getMealRating(): ?int
     {
-        return $this->meal;
+        return $this->mealRating;
     }
 
-    public function setMeal(?int $meal): Review
+    public function setMealRating(?int $mealRating): Review
     {
-        $this->meal = $meal;
+        $this->mealRating = $mealRating;
         return $this;
     }
 
-    public function getWifi(): ?string
+    public function getWifiRating(): ?string
     {
-        return $this->wifi;
+        return $this->wifiRating;
     }
 
-    public function setWifi(?string $wifi): Review
+    public function setWifiRating(?string $wifiRating): Review
     {
-        $this->wifi = $wifi;
+        $this->wifiRating = $wifiRating;
         return $this;
     }
+
+    public function getHygieneRating(): ?string
+    {
+        return $this->hygieneRating;
+    }
+
+    public function setHygieneRating(?string $hygieneRating): Review
+    {
+        $this->hygieneRating = $hygieneRating;
+        return $this;
+    }
+
 }

@@ -3,6 +3,7 @@
 namespace App\Handler;
 
 use JsonMachine\Items;
+use JsonMachine\JsonDecoder\ExtJsonDecoder;
 
 class ReviewHandler extends BaseHandler
 {
@@ -29,15 +30,16 @@ class ReviewHandler extends BaseHandler
 
     public function handleReviewsFile()
     {
-        $t = Items::fromFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . self::REVIEWS_FILE_NAME);
+        $hotelsData = Items::fromFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . self::REVIEWS_FILE_NAME, ['decoder' => new ExtJsonDecoder(true)]);
 
-        foreach($t as $name => $value){
-            if($value === null){
+        foreach($hotelsData as $hotelUri => $reviewData){
+            if($reviewData === null){
                 continue;
             }
-            var_dump($name);
-            var_dump($value);
-            //file_put_contents(static::STORAGE_DIR.'/asdsa', json_encode($value));
+            foreach($reviewData['reviews'] as $review){
+                $this->reviewRepository->insertReview($review, $hotelUri);
+            }
+            $this->reviewRepository->flush();
             die;
         }
     }
