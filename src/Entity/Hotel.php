@@ -22,7 +22,7 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
 #[Entity]
 #[Table('hotels')]
 #[UniqueConstraint(columns: ["uri"])]
-#[Index(columns: ["location_id","star_rating","id"], name: 'hotels_star_rating_search')]
+#[Index(columns: ["location_id", "star_rating", "id"], name: 'hotels_star_rating_search')]
 class Hotel
 {
     #[Id]
@@ -66,6 +66,33 @@ class Hotel
 
     #[Column(name: 'additional_information', type: Types::TEXT)]
     private string $additionalInformation;
+
+    #[Column(name: 'client_rating', type: Types::DECIMAL, precision: 5, scale: 2,nullable: true)]
+    private ?float $clientRating;
+
+    #[Column(name: 'cleanness_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    private ?float $cleannessRating;
+
+    #[Column(name: 'location_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    private ?float $locationRating;
+
+    #[Column(name: 'price_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    private ?float $priceRating;
+
+    #[Column(name: 'services_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    private ?float $servicesRating;
+
+    #[Column(name: 'room_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    private ?float $roomRating;
+
+    #[Column(name: 'meal_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    private ?float $mealRating;
+
+    #[Column(name: 'wifi_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    private ?float $wifiRating;
+
+    #[Column(name: 'hygiene_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    private ?float $hygieneRating;
 
     #[OneToMany(targetEntity: HotelImage::class, mappedBy: 'hotel', cascade: ['persist', 'remove'])]
     private Collection $images;
@@ -326,4 +353,105 @@ class Hotel
         $this->additionalInformation = $additionalInformation;
         return $this;
     }
+
+    public function getClientRating(): ?float
+    {
+        return $this->clientRating;
+    }
+
+    public function setClientRating(?float $clientRating): Hotel
+    {
+        $this->clientRating = $clientRating;
+        return $this;
+    }
+
+    public function getCleannessRating(): ?float
+    {
+        return $this->cleannessRating;
+    }
+
+    public function setCleannessRating(?float $cleannessRating): Hotel
+    {
+        $this->cleannessRating = $cleannessRating;
+        return $this;
+    }
+
+    public function getLocationRating(): ?float
+    {
+        return $this->locationRating;
+    }
+
+    public function setLocationRating(?float $locationRating): Hotel
+    {
+        $this->locationRating = $locationRating;
+        return $this;
+    }
+
+    public function getPriceRating(): ?float
+    {
+        return $this->priceRating;
+    }
+
+    public function setPriceRating(?float $priceRating): Hotel
+    {
+        $this->priceRating = $priceRating;
+        return $this;
+    }
+
+    public function getServicesRating(): ?float
+    {
+        return $this->servicesRating;
+    }
+
+    public function setServicesRating(?float $servicesRating): Hotel
+    {
+        $this->servicesRating = $servicesRating;
+        return $this;
+    }
+
+    public function getRoomRating(): ?float
+    {
+        return $this->roomRating;
+    }
+
+    public function setRoomRating(?float $roomRating): Hotel
+    {
+        $this->roomRating = $roomRating;
+        return $this;
+    }
+
+    public function getMealRating(): ?float
+    {
+        return $this->mealRating;
+    }
+
+    public function setMealRating(?float $mealRating): Hotel
+    {
+        $this->mealRating = $mealRating;
+        return $this;
+    }
+
+    public function getWifiRating(): ?float
+    {
+        return $this->wifiRating;
+    }
+
+    public function setWifiRating(?float $wifiRating): Hotel
+    {
+        $this->wifiRating = $wifiRating;
+        return $this;
+    }
+
+    public function getHygieneRating(): ?float
+    {
+        return $this->hygieneRating;
+    }
+
+    public function setHygieneRating(?float $hygieneRating): Hotel
+    {
+        $this->hygieneRating = $hygieneRating;
+        return $this;
+    }
+
+
 }
