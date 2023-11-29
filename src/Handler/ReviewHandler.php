@@ -36,9 +36,8 @@ class ReviewHandler extends BaseHandler
             if($reviewData === null){
                 continue;
             }
-            foreach($reviewData['reviews'] as $review){
-                $this->reviewRepository->insertReview($review, $hotelUri);
-            }
+            $this->reviewRepository->insertReviews($reviewData, $hotelUri);
+
             $this->reviewRepository->flush();
             die;
         }
