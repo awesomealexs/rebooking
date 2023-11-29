@@ -123,17 +123,6 @@ class Review
         return $this;
     }
 
-    public function getHygiene(): ?string
-    {
-        return $this->hygiene;
-    }
-
-    public function setHygiene(?string $hygiene): Review
-    {
-        $this->hygiene = $hygiene;
-        return $this;
-    }
-
     public function getReviewPlus(): ?string
     {
         return $this->reviewPlus;
