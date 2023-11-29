@@ -54,7 +54,7 @@ class Review
     #[Column(name: 'trip_type', nullable: true)]
     private ?string $tripType;
 
-    #[Column(type: Types::DECIMAL, nullable: true)]
+    #[Column(type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
     private ?float $rating;
 
     #[Column(name: 'cleanness_rating', nullable: true)]

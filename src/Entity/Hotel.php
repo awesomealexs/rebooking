@@ -67,31 +67,31 @@ class Hotel
     #[Column(name: 'additional_information', type: Types::TEXT)]
     private string $additionalInformation;
 
-    #[Column(name: 'client_rating', type: Types::DECIMAL, precision: 5, scale: 2,nullable: true)]
+    #[Column(name: 'client_rating', type: Types::DECIMAL, precision: 5, scale: 1,nullable: true)]
     private ?float $clientRating;
 
-    #[Column(name: 'cleanness_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    #[Column(name: 'cleanness_rating', type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
     private ?float $cleannessRating;
 
-    #[Column(name: 'location_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    #[Column(name: 'location_rating', type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
     private ?float $locationRating;
 
-    #[Column(name: 'price_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    #[Column(name: 'price_rating', type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
     private ?float $priceRating;
 
-    #[Column(name: 'services_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    #[Column(name: 'services_rating', type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
     private ?float $servicesRating;
 
-    #[Column(name: 'room_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    #[Column(name: 'room_rating', type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
     private ?float $roomRating;
 
-    #[Column(name: 'meal_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    #[Column(name: 'meal_rating', type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
     private ?float $mealRating;
 
-    #[Column(name: 'wifi_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    #[Column(name: 'wifi_rating', type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
     private ?float $wifiRating;
 
-    #[Column(name: 'hygiene_rating', type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    #[Column(name: 'hygiene_rating', type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
     private ?float $hygieneRating;
 
     #[OneToMany(targetEntity: HotelImage::class, mappedBy: 'hotel', cascade: ['persist', 'remove'])]
