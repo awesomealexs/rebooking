@@ -36,10 +36,24 @@ class ReviewHandler extends BaseHandler
             if($reviewData === null){
                 continue;
             }
-            $this->reviewRepository->insertReviews($reviewData, $hotelUri);
+            var_dump($hotelUri);
+            foreach($reviewData['reviews'] as $review){
+                if(!empty($review['images'])){
+                    $this->reviewRepository->insertReviews($reviewData, $hotelUri);
+                    $this->reviewRepository->flush();
+                    return;
+                    //var_dump($review['images']);
+                    //die;
+                    //file_put_contents(static::STORAGE_DIR.'/dsfdsscdwfewfdsf', json_encode($review));
+                    //return;
+                }
+                continue;
+            }
 
-            $this->reviewRepository->flush();
-            die;
+            //$this->reviewRepository->insertReviews($reviewData, $hotelUri);
+
+            //$this->reviewRepository->flush();
+            //return;
         }
     }
 }

@@ -8,6 +8,7 @@ use App\Entity\HotelDescription;
 use App\Entity\HotelImage;
 use App\Entity\Location;
 use App\Entity\Review;
+use App\Entity\ReviewImage;
 use App\Entity\Room;
 use App\Entity\RoomAmenities;
 use App\Helper\StringHelper;
@@ -172,7 +173,7 @@ class HotelsController extends AbstractController
         $reviews = [];
 
 
-        $hotel2 = $hotelRepository->findOneBy(['uri' => 'ozgur_bey_spa_hotel_']);
+        $hotel2 = $hotelRepository->findOneBy(['uri' => 'alaturca_house']);
 
         foreach ($hotel2?->getReviews()->getIterator() as $review) {
             /**
@@ -188,6 +189,14 @@ class HotelsController extends AbstractController
             $reviews['detailed_ratings']['wifi'] = $hotel2?->getWifiRating();
             $reviews['detailed_ratings']['hygiene'] = $hotel2?->getHygieneRating();
 
+            $images = [];
+            foreach($review->getImages()->getIterator() as $reviewImage){
+                /**
+                 * @var $reviewImage ReviewImage
+                 */
+                $images[] = StringHelper::replaceWithinBracers($reviewImage->getImage(), 'size', '1024x768');
+            }
+
             $reviews['reviews'][] = [
                 'review_plus' => $review->getReviewPlus(),
                 'review_minus' => $review->getReviewMinus(),
@@ -197,7 +206,7 @@ class HotelsController extends AbstractController
                 'children' => $review->getChildren(),
                 'room_name' => $review->getRoomName(),
                 'nights' => $review->getNights(),
-                'images' => [],
+                'images' => $images,
                 'detailed' => [
                     'cleanness' => $review->getCleannessRating(),
                     'location' => $review->getLocationRating(),

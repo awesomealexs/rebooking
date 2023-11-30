@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
@@ -9,6 +11,7 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 
 #[Entity]
@@ -81,9 +84,32 @@ class Review
     #[Column(name: 'hygiene_rating', nullable: true)]
     private ?string $hygieneRating;
 
-    #[ManyToOne(targetEntity: Hotel::class, inversedBy: 'reviews', cascade: ['persist', 'remove'])]
+    #[ManyToOne(targetEntity: Hotel::class, cascade: ['persist', 'remove'], inversedBy: 'reviews')]
     #[JoinColumn(referencedColumnName: 'id')]
     private Hotel $hotel;
+
+    #[OneToMany(mappedBy: 'review', targetEntity: ReviewImage::class, cascade: ['persist', 'remove'])]
+    private Collection $images;
+
+
+    public function __construct()
+    {
+        $this->images = new ArrayCollection();
+    }
+
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+
+    public function addImage(ReviewImage $image): Review
+    {
+        $image->setReview($this);
+        $this->images->add($image);
+
+        return $this;
+    }
 
     public function getHotel(): Hotel
     {
