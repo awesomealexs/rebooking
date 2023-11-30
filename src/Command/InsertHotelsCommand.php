@@ -43,7 +43,7 @@ class InsertHotelsCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $this->hotelHandler->handleHotelsDumpFile();
+        $this->hotelHandler->handleDeltaFile();
 
 
         return Command::SUCCESS;

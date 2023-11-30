@@ -30,7 +30,7 @@ class ReviewImage
     #[Column('image_sort')]
     private int $imageSort;
 
-    #[ManyToOne(targetEntity: Review::class, cascade: ['persist', 'remove'], inversedBy: 'images')]
+    #[ManyToOne(targetEntity: Review::class, cascade: ['persist'], inversedBy: 'images')]
     #[JoinColumn(referencedColumnName: 'id')]
     private Review $review;
 

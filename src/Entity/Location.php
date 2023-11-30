@@ -43,7 +43,7 @@ class Location
     #[Column(name: 'country_code', nullable: true)]
     private ?string $countryCode;
 
-    #[OneToMany(targetEntity: Hotel::class, mappedBy: 'location', cascade: ['persist', 'remove'])]
+    #[OneToMany(mappedBy: 'location', targetEntity: Hotel::class, cascade: ['persist', 'remove'])]
     private Collection $hotels;
 
     public function __construct()

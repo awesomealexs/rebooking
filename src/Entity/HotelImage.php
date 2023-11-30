@@ -32,7 +32,7 @@ class HotelImage
     #[Column]
     private string $alt;
 
-    #[ManyToOne(targetEntity: Hotel::class, inversedBy: 'images', cascade: ['persist', 'remove'])]
+    #[ManyToOne(targetEntity: Hotel::class, cascade: ['persist'], inversedBy: 'images')]
     #[JoinColumn(referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Hotel $hotel;
 

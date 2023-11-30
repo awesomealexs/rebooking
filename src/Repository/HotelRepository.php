@@ -13,6 +13,7 @@ use App\Entity\Room;
 use App\Entity\RoomAmenities;
 use App\Entity\RoomImage;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
 class HotelRepository
 {
@@ -26,6 +27,8 @@ class HotelRepository
 
     protected array $locations;
 
+    protected EntityRepository $hotelRepository;
+
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
@@ -34,6 +37,7 @@ class HotelRepository
 
     public function initEntities(): void
     {
+        $this->hotelRepository = $this->entityManager->getRepository(Hotel::class);
         $this->initAmenities();
         $this->initDescriptionGroups();
         $this->initRoomAmenities();
@@ -116,6 +120,73 @@ class HotelRepository
     protected function removeSpecialChars(string $string): string
     {
         return preg_replace('/[^а-яА-ЯёЁa-zA-Z0-9\-\,[:space:]]/u', '', $string);
+    }
+
+    public function updateHotel(array $hotelData): void
+    {
+        $hotel = $this->hotelRepository->findOneBy(['uri' => $hotelData['id']]);
+        /**
+         * @var $hotel Hotel
+         */
+        if ($hotel === null && $hotelData['deleted'] === false) {
+            $this->insertHotel($hotelData);
+            return;
+        }
+
+        if ($hotelData['deleted']) {
+            $this->entityManager->remove($hotel);
+            return;
+        }
+
+        $hotel
+            ->setPhone($hotelData['phone'] ?? '')
+            ->setTitle($this->removeSpecialChars($hotelData['name']))
+            ->setUri($hotelData['id'])
+            ->setEmail($hotelData['email'] ?? '')
+            ->setLocation(@$this->locations[$hotelData['region']['id']] ?? null)
+            ->setStarRating($hotelData['star_rating'] ?? 0)
+            ->setCheckIn($hotelData['check_in_time'] ?? '')
+            ->setCheckOut($hotelData['check_out_time'] ?? '')
+            ->setAddress($this->removeSpecialChars($hotelData['address']) ?? '')
+            ->setLongitude($hotelData['longitude'] ?? '')
+            ->setLatitude($hotelData['latitude'] ?? '')
+            ->setAdditionalInformation('');
+
+        $hotel->dropAmenities();
+
+        foreach ($hotelData['amenity_groups'] as $amenityGroup) {
+            foreach ($amenityGroup['amenities'] as $item) {
+                $hotel->addAmenities($this->amenities[$amenityGroup['group_name']]['items'][$item]);
+            }
+        }
+
+        $deltaImages = $hotelData['images'];
+
+        foreach ($hotel->getImages()->getIterator() as $image) {
+            /**
+             * @var $image HotelImage
+             */
+            $existedImage = $image->getImage();
+            if (in_array($existedImage, $deltaImages)) {
+                $deltaImages = array_filter($deltaImages, static function ($item) use ($existedImage) {
+                    return $item !== $existedImage;
+                });
+                continue;
+            }
+            $this->entityManager->remove($image);
+        }
+
+        foreach ($deltaImages as $idx => $imageUrl) {
+            $hotelImage = (new HotelImage())
+                ->setImageSort($idx + 1)
+                ->setImage($imageUrl)
+                ->setAlt('');
+            $hotel->addImage($hotelImage);
+        }
+
+
+        $this->entityManager->flush();
+        die;
     }
 
     public function insertHotel(array $hotelData): void

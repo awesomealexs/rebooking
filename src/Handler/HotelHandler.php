@@ -2,6 +2,7 @@
 
 namespace App\Handler;
 
+use App\Entity\ReviewImage;
 use App\Enum\FileCutType;
 
 class HotelHandler extends BaseHandler
@@ -9,6 +10,34 @@ class HotelHandler extends BaseHandler
     protected const HOTELS_FILE_NAME = 'Hotels';
 
     protected const HOTELS_CURRENT_FILE_NAME = 'Hotels_current';
+
+    protected const HOTELS_INCREMENTAL_FILE_NAME = 'Hotels_incremental';
+
+    public function getHotelsDeltaFile(): bool
+    {
+        try {
+            $fileName = $this->rateHawkApi->getHotelsIncremental();
+            $resultFileName = static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::HOTELS_INCREMENTAL_FILE_NAME;
+            $decompressed = preg_replace('/(.*)\..*/', '$1', $fileName);
+            $command = "zstd -d {$fileName}; rm {$fileName};mv {$decompressed} $resultFileName";
+            exec($command);
+
+            return true;
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+            return false;
+        }
+    }
+
+    public function handleDeltaFile(): void
+    {
+        $start = microtime(true);
+        $this->jsonHandler->setFile(static::STORAGE_DIR.DIRECTORY_SEPARATOR.static::HOTELS_INCREMENTAL_FILE_NAME);
+
+        while($hotelDta = $this->jsonHandler->getItem()){
+            $this->hotelRepository->updateHotel($hotelDta);
+        }
+    }
 
     protected function sliceHotelsFile(): void
     {

@@ -34,7 +34,7 @@ class HotelAmenities
     #[ManyToMany(targetEntity: Hotel::class, mappedBy: 'amenities')]
     private Collection $hotels;
 
-    #[ManyToOne(targetEntity: HotelAmenitiesGroups::class, inversedBy: 'amenities', cascade: ['persist', 'remove'])]
+    #[ManyToOne(targetEntity: HotelAmenitiesGroups::class, cascade: ['persist'], inversedBy: 'amenities')]
     #[JoinColumn(referencedColumnName: 'id', onDelete: 'CASCADE')]
     private HotelAmenitiesGroups $group;
 

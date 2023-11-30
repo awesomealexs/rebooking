@@ -42,11 +42,11 @@ class Room
     #[Column('ratehawk_room_group')]
     private int $roomGroup;
 
-    #[ManyToOne(targetEntity: Hotel::class, inversedBy: 'rooms', cascade: ['persist', 'remove'])]
+    #[ManyToOne(targetEntity: Hotel::class, cascade: ['persist'], inversedBy: 'rooms')]
     #[JoinColumn(referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Hotel $hotel;
 
-    #[OneToMany(targetEntity: RoomImage::class, mappedBy: 'room', cascade: ['persist', 'remove'])]
+    #[OneToMany(mappedBy: 'room', targetEntity: RoomImage::class, cascade: ['persist', 'remove'])]
     private Collection $images;
 
     #[ManyToMany(targetEntity: RoomAmenities::class, inversedBy: 'amenities', cascade: ['persist'])]

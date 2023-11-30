@@ -26,7 +26,7 @@ class HotelAmenitiesGroups
     #[Column]
     private string $name;
 
-    #[OneToMany(targetEntity: HotelAmenities::class, mappedBy: 'group', cascade: ['persist', 'remove'])]
+    #[OneToMany(mappedBy: 'group', targetEntity: HotelAmenities::class, cascade: ['persist', 'remove'])]
     private Collection $amenities;
 
     public function __construct(){

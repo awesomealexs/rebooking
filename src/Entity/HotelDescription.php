@@ -27,11 +27,11 @@ class HotelDescription
     #[Column(type: Types::TEXT)]
     private string $text;
 
-    #[ManyToOne(targetEntity: HotelDescriptionGroup::class, inversedBy: 'descriptions', cascade: ['persist', 'remove'])]
-    #[JoinColumn(referencedColumnName: 'id', name: 'description_group_id')]
+    #[ManyToOne(targetEntity: HotelDescriptionGroup::class, cascade: ['persist'], inversedBy: 'descriptions')]
+    #[JoinColumn(name: 'description_group_id', referencedColumnName: 'id')]
     private HotelDescriptionGroup $descriptionGroup;
 
-    #[ManyToOne(targetEntity: Hotel::class, inversedBy: 'descriptions', cascade: ['persist', 'remove'])]
+    #[ManyToOne(targetEntity: Hotel::class, cascade: ['persist'], inversedBy: 'descriptions')]
     #[JoinColumn(referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Hotel $hotel;
 

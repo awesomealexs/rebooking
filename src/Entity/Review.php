@@ -84,7 +84,7 @@ class Review
     #[Column(name: 'hygiene_rating', nullable: true)]
     private ?string $hygieneRating;
 
-    #[ManyToOne(targetEntity: Hotel::class, cascade: ['persist', 'remove'], inversedBy: 'reviews')]
+    #[ManyToOne(targetEntity: Hotel::class, cascade: ['persist'], inversedBy: 'reviews')]
     #[JoinColumn(referencedColumnName: 'id')]
     private Hotel $hotel;
 

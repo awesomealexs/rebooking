@@ -125,4 +125,13 @@ class RatehawkApi
 
         return $this->getAndSaveFile(Endpoints::HOTEL_REVIREW_DUMP, $options);
     }
+
+    public function getHotelsIncremental(): string{
+        $options['body'] = json_encode([
+            'inventory' => 'all',
+            'language' => 'ru',
+        ], JSON_THROW_ON_ERROR);
+
+        return $this->getAndSaveFile(Endpoints::HOTEL_INCREMENTAL_DUMP, $options);
+    }
 }

@@ -138,6 +138,14 @@ class Hotel
         return $this;
     }
 
+    public function dropAmenities(): Hotel{
+        foreach($this->amenities->getIterator() as $amenity){
+            $this->amenities->removeElement($amenity);
+        }
+
+        return $this;
+    }
+
 
     public function getAmenities(): Collection
     {
