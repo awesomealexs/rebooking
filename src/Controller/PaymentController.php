@@ -49,8 +49,7 @@ class PaymentController extends AbstractController
 
         $payment = (new Payment())
             ->setCreatedAt(new \DateTime())
-            ->setAmount($siteRequest->getAmount())
-        ;
+            ->setAmount($siteRequest->getAmount());
         $this->entityManager->persist($payment);
         $this->entityManager->flush();
 
@@ -60,8 +59,7 @@ class PaymentController extends AbstractController
             ->setOrderNumber($payment->getId())
             ->setReturnUrl('http://hr.rebooking.global/return')
             //->setReturnUrl($siteRequest->getReturnUrl())
-            ->setAmount(100)
-            //->setAmount($siteRequest->getAmount())
+            ->setAmount(100)//->setAmount($siteRequest->getAmount())
         ;
 
         parse_str(http_build_query($request), $temp);
@@ -72,25 +70,26 @@ class PaymentController extends AbstractController
             ->getContents();
 
         $response = $this->jsonMapper->map(json_decode($res), new InitPaymentPageResponse());
+        /**
+         * @var $response InitPaymentPageResponse
+         */
+        if (static::SUCCESSFUL_DEPOSIT !== $response->getErrorCode()) {
+            $this
+                ->telegramNotifier
+                ->notify(sprintf(
+                    static::NOTIFY_ALERT_TEMPLATE,
+                    $response->getErrorMessage(),
+                    $response->getErrorCode()));
+            $payment->setErrorCode($response->getErrorCode());
+            $this->entityManager->persist($payment);
+            $this->entityManager->flush();
 
-        if ($response instanceof InitPaymentPageResponse) {
-            if (static::SUCCESSFUL_DEPOSIT !== $response->getErrorCode()) {
-                $this
-                    ->telegramNotifier
-                    ->notify(sprintf(
-                        static::NOTIFY_ALERT_TEMPLATE,
-                        $response->getErrorMessage(),
-                        $response->getErrorCode()));
-                $payment->setErrorCode($response->getErrorCode());
-                $this->entityManager->persist($payment);
-                $this->entityManager->flush();
-
-                return $this->json([
-                    'success' => false,
-                    'message' => 'payment api error'
-                ], Response::HTTP_BAD_REQUEST);
-            }
+            return $this->json([
+                'success' => false,
+                'message' => 'payment api error'
+            ], Response::HTTP_BAD_REQUEST);
         }
+
 
         $payment
             ->setErrorCode($response->getErrorCode())

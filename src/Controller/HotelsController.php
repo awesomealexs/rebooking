@@ -67,25 +67,33 @@ class HotelsController extends AbstractController
 
         $hotels = [];
         foreach ($hotelsRepository->findBy(['id' => $ids]) as $hotelIem) {
-            if ($hotelIem instanceof Hotel) {
-                $amenities = [];
-                foreach ($hotelIem->getAmenities()->getIterator() as $amenity) {
-                    if ($amenity instanceof HotelAmenities) {
-                        $amenities[] = $amenity->getGroup()->getName();
-                    }
-                }
+            /**
+             * @var $hotelIem Hotel
+             */
+            $amenities = [];
+            foreach ($hotelIem->getAmenities()->getIterator() as $amenity) {
+                /**
+                 * @var $amenity HotelAmenities
+                 */
+                $amenities[] = $amenity->getGroup()->getName();
 
-                $image = $hotelIem->getImages()->get(0)?->getImage();
-                $amenities = array_values(array_unique($amenities));
-                $hotels[] = [
-                    'uri' => $hotelIem->getUri(),
-                    'title' => $hotelIem->getTitle(),
-                    'address' => $hotelIem->getAddress(),
-                    'star_rating' => $hotelIem->getStarRating(),
-                    'amenities' => $amenities,
-                    'image' => StringHelper::replaceWithinBracers($image ?? '', 'size', '1024x768'),
-                ];
             }
+
+            $image = $hotelIem->getImages()->get(0)?->getImage();
+            $amenities = array_values(array_unique($amenities));
+            $hotels[] = [
+                'uri' => $hotelIem->getUri(),
+                'title' => $hotelIem->getTitle(),
+                'address' => $hotelIem->getAddress(),
+                'star_rating' => $hotelIem->getStarRating(),
+                'amenities' => $amenities,
+                'image' => StringHelper::replaceWithinBracers($image ?? '', 'size', '1024x768'),
+                'reviews' => [
+                    'rating' => (float)$hotelIem->getClientRating(),
+                    'reviews_quantity' => count($hotelIem->getReviews())
+                ]
+            ];
+
         }
 
 
@@ -94,13 +102,13 @@ class HotelsController extends AbstractController
             'data' => [
                 'region_id' => $locationId,
                 'hotels' => $hotels,
-                ],
+            ],
         ]);
     }
 
 
     #[Route('/hotel/{uri}', name: 'app_hotels', methods: ["GET"])]
-    public function hotelInfo(Request $request, $uri): JsonResponse
+    public function hotelInfo($uri): JsonResponse
     {
         $hotelRepository = $this->entityManager->getRepository(Hotel::class);
         $hotel = ($hotelRepository->findOneBy(['uri' => $uri]));
@@ -113,43 +121,52 @@ class HotelsController extends AbstractController
 
         $rooms = [];
         foreach ($hotel?->getRooms()->getIterator() as $room) {
-            if ($room instanceof Room) {
-                $roomImages = [];
-                foreach ($room->getImages()->getIterator() as $roomImage) {
-                    $roomImages[] = StringHelper::replaceWithinBracers($roomImage->getImage(), 'size', '1024x768');
-                }
-                $roomAmenities = [];
-                foreach ($room->getAmenities()->getIterator() as $amenity) {
-                    if ($amenity instanceof RoomAmenities) {
-                        $roomAmenities[] = $amenity->getName();
-                    }
-                }
-                $rooms[] = [
-                    'title' => $room->getTitle(),
-                    'images' => $roomImages,
-                    'amenities' => $roomAmenities,
-                    'ratehawk_room_group' => $room->getRoomGroup()
-                ];
+            /**
+             * @var $room Room
+             */
+            $roomImages = [];
+            foreach ($room->getImages()->getIterator() as $roomImage) {
+                $roomImages[] = StringHelper::replaceWithinBracers($roomImage->getImage(), 'size', '1024x768');
             }
+            $roomAmenities = [];
+            foreach ($room->getAmenities()->getIterator() as $amenity) {
+                /**
+                 * @var $amenity RoomAmenities
+                 */
+                $roomAmenities[] = $amenity->getName();
+
+            }
+            $rooms[] = [
+                'title' => $room->getTitle(),
+                'images' => $roomImages,
+                'amenities' => $roomAmenities,
+                'ratehawk_room_group' => $room->getRoomGroup()
+            ];
+
         }
         $hotelImages = [];
         foreach ($hotel?->getImages()->getIterator() as $hotelImage) {
-            if ($hotelImage instanceof HotelImage) {
-                $hotelImages[] = StringHelper::replaceWithinBracers($hotelImage->getImage(), 'size', '1024x768');
-            }
+            /**
+             * @var $hotelImage HotelImage
+             */
+            $hotelImages[] = StringHelper::replaceWithinBracers($hotelImage->getImage(), 'size', '1024x768');
+
         }
 
         $hotelAmenities = [];
         foreach ($hotel?->getAmenities()->getIterator() as $hotelAmenity) {
-            if ($hotelAmenity instanceof HotelAmenities) {
-                $hotelAmenities[$hotelAmenity->getGroup()->getName()][] = $hotelAmenity->getName();
-            }
+            /**
+             * @var $hotelAmenity HotelAmenities
+             */
+            $hotelAmenities[$hotelAmenity->getGroup()->getName()][] = $hotelAmenity->getName();
+
         }
         $hotelDescriptions = [];
         foreach ($hotel?->getDescriptions()->getIterator() as $hotelDescription) {
-            if ($hotelDescription instanceof HotelDescription) {
-                $hotelDescriptions[$hotelDescription->getDescriptionGroup()->getTitle()] = $hotelDescription->getText();
-            }
+            /**
+             * @var $hotelDescription HotelDescription
+             */
+            $hotelDescriptions[$hotelDescription->getDescriptionGroup()->getTitle()] = $hotelDescription->getText();
         }
 
         $reviews = [];
@@ -157,43 +174,45 @@ class HotelsController extends AbstractController
 
         $hotel2 = $hotelRepository->findOneBy(['uri' => 'ozgur_bey_spa_hotel_']);
 
-        foreach($hotel2?->getReviews()->getIterator() as $review){
-            if($review instanceof Review){
-                $reviews['rating'] = $hotel2?->getClientRating();
-                $reviews['detailed_ratings']['cleanness'] = $hotel2?->getCleannessRating();
-                $reviews['detailed_ratings']['location'] = $hotel2?->getLocationRating();
-                $reviews['detailed_ratings']['price'] = $hotel2?->getPriceRating();
-                $reviews['detailed_ratings']['services'] = $hotel2?->getServicesRating();
-                $reviews['detailed_ratings']['room'] = $hotel2?->getRoomRating();
-                $reviews['detailed_ratings']['meal'] = $hotel2?->getMealRating();
-                $reviews['detailed_ratings']['wifi'] = $hotel2?->getWifiRating();
-                $reviews['detailed_ratings']['hygiene'] = $hotel2?->getHygieneRating();
+        foreach ($hotel2?->getReviews()->getIterator() as $review) {
+            /**
+             * @var $review Review
+             */
+            $reviews['rating'] = $hotel2?->getClientRating();
+            $reviews['detailed_ratings']['cleanness'] = $hotel2?->getCleannessRating();
+            $reviews['detailed_ratings']['location'] = $hotel2?->getLocationRating();
+            $reviews['detailed_ratings']['price'] = $hotel2?->getPriceRating();
+            $reviews['detailed_ratings']['services'] = $hotel2?->getServicesRating();
+            $reviews['detailed_ratings']['room'] = $hotel2?->getRoomRating();
+            $reviews['detailed_ratings']['meal'] = $hotel2?->getMealRating();
+            $reviews['detailed_ratings']['wifi'] = $hotel2?->getWifiRating();
+            $reviews['detailed_ratings']['hygiene'] = $hotel2?->getHygieneRating();
 
-                $reviews['reviews'][] = [
-                    'review_plus' => $review->getReviewPlus(),
-                    'review_minus' => $review->getReviewMinus(),
-                    'created' => $review->getCreatedAt(),
-                    'author' => $review->getAuthor(),
-                    'adults' => $review->getAdults(),
-                    'children' => $review->getChildren(),
-                    'room_name' => $review->getRoomName(),
-                    'nights' => $review->getNights(),
-                    'images' => [],
-                    'detailed' => [
-                        'cleanness' => $review->getCleannessRating(),
-                        'location' => $review->getLocationRating(),
-                        'price' => $review->getPriceRating(),
-                        'services' => $review->getServicesRating(),
-                        'room' => $review->getRoomRating(),
-                        'meal' => $review->getMealRating(),
-                        'wifi' => $review->getWifiRating(),
-                        'hygiene' => $review->getHygieneRating(),
-                    ],
-                    'traveller_type' => $review->getTravellerType(),
-                    'trip_type' => $review->getTripType(),
-                    'rating' => $review->getRating(),
-                ];
-            }
+            $reviews['reviews'][] = [
+                'review_plus' => $review->getReviewPlus(),
+                'review_minus' => $review->getReviewMinus(),
+                'created' => $review->getCreatedAt(),
+                'author' => $review->getAuthor(),
+                'adults' => $review->getAdults(),
+                'children' => $review->getChildren(),
+                'room_name' => $review->getRoomName(),
+                'nights' => $review->getNights(),
+                'images' => [],
+                'detailed' => [
+                    'cleanness' => $review->getCleannessRating(),
+                    'location' => $review->getLocationRating(),
+                    'price' => $review->getPriceRating(),
+                    'services' => $review->getServicesRating(),
+                    'room' => $review->getRoomRating(),
+                    'meal' => $review->getMealRating(),
+                    'wifi' => $review->getWifiRating(),
+                    'hygiene' => $review->getHygieneRating(),
+                ],
+                'traveller_type' => $review->getTravellerType(),
+                'trip_type' => $review->getTripType(),
+                'rating' => $review->getRating(),
+            ];
+
         }
 
         $hotelData = [
