@@ -67,7 +67,7 @@ class Hotel
     #[Column(name: 'additional_information', type: Types::TEXT)]
     private string $additionalInformation;
 
-    #[Column(name: 'client_rating', type: Types::DECIMAL, precision: 5, scale: 1,nullable: true)]
+    #[Column(name: 'client_rating', type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
     private ?float $clientRating;
 
     #[Column(name: 'cleanness_rating', type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
@@ -94,17 +94,17 @@ class Hotel
     #[Column(name: 'hygiene_rating', type: Types::DECIMAL, precision: 5, scale: 1, nullable: true)]
     private ?float $hygieneRating;
 
-    #[OneToMany(targetEntity: HotelImage::class, mappedBy: 'hotel', cascade: ['persist', 'remove'])]
+    #[OneToMany(mappedBy: 'hotel', targetEntity: HotelImage::class, cascade: ['persist', 'remove'])]
     private Collection $images;
 
-    #[OneToMany(targetEntity: Review::class, mappedBy: 'hotel', cascade: ['persist', 'remove'])]
+    #[OneToMany(mappedBy: 'hotel', targetEntity: Review::class, cascade: ['persist', 'remove'])]
     private Collection $reviews;
 
-    #[ManyToOne(targetEntity: Location::class, inversedBy: 'hotels', cascade: ['persist', 'remove'])]
+    #[ManyToOne(targetEntity: Location::class, cascade: ['persist'], inversedBy: 'hotels')]
     #[JoinColumn(referencedColumnName: 'id')]
     private ?Location $location;
 
-    #[OneToMany(targetEntity: HotelDescription::class, mappedBy: 'hotel', cascade: ['persist', 'remove'])]
+    #[OneToMany(mappedBy: 'hotel', targetEntity: HotelDescription::class, cascade: ['persist', 'remove'])]
     private Collection $descriptions;
 
     #[ManyToMany(targetEntity: HotelAmenities::class, inversedBy: 'hotels')]
@@ -113,7 +113,7 @@ class Hotel
     #[InverseJoinColumn(name: 'hotel_amenities_id', referencedColumnName: 'id')]
     private Collection $amenities;
 
-    #[OneToMany(targetEntity: Room::class, mappedBy: 'hotel', cascade: ['persist', 'remove'])]
+    #[OneToMany(mappedBy: 'hotel', targetEntity: Room::class, cascade: ['persist', 'remove'])]
     private Collection $rooms;
 
     public function __construct()
@@ -138,8 +138,9 @@ class Hotel
         return $this;
     }
 
-    public function dropAmenities(): Hotel{
-        foreach($this->amenities->getIterator() as $amenity){
+    public function dropAmenities(): Hotel
+    {
+        foreach ($this->amenities->getIterator() as $amenity) {
             $this->amenities->removeElement($amenity);
         }
 

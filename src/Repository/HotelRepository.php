@@ -128,6 +128,8 @@ class HotelRepository
         /**
          * @var $hotel Hotel
          */
+        var_dump($hotel->getUri());
+
         if ($hotel === null && $hotelData['deleted'] === false) {
             $this->insertHotel($hotelData);
             return;
