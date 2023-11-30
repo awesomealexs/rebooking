@@ -14,10 +14,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Dotenv\Dotenv;
 
 #[AsCommand(
-    name: 'app:insert-hotels',
+    name: 'app:make-delta',
     description: 'Create main user',
 )]
-class InsertHotelsCommand extends Command
+class MakeDeltaCommand extends Command
 {
     protected HotelHandler $hotelHandler;
 
