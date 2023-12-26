@@ -46,7 +46,8 @@ class HotelsController extends AbstractController
         $perPage = $request->query->get('per_page') ?? static::HOTELS_PER_PAGE;
 
 
-        $locationId = $locations[0]->getId();
+        $currentLocation = $locations[0];
+        $locationId = $currentLocation->getId();
 
         $query = $this->entityManager
             ->createQueryBuilder()
@@ -87,6 +88,8 @@ class HotelsController extends AbstractController
                 'title' => $hotelIem->getTitle(),
                 'address' => $hotelIem->getAddress(),
                 'star_rating' => $hotelIem->getStarRating(),
+                'lng' => $hotelIem->getLongitude(),
+                'lat' => $hotelIem->getLatitude(),
                 'amenities' => $amenities,
                 'image' => StringHelper::replaceWithinBracers($image ?? '', 'size', '1024x768'),
                 'reviews' => [
@@ -102,6 +105,8 @@ class HotelsController extends AbstractController
             'success' => true,
             'data' => [
                 'region_id' => $locationId,
+                'lng' => $currentLocation->getLongitude(),
+                'lat' => $currentLocation->getLatitude(),
                 'hotels' => $hotels,
             ],
         ]);
