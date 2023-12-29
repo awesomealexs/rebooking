@@ -67,6 +67,16 @@ class HotelsController extends AbstractController
 
         $hotelsRepository = $this->entityManager->getRepository(Hotel::class);
 
+        $query = $this->entityManager
+            ->createQueryBuilder()
+            ->select('count(h.id)')
+            ->from('App\Entity\Hotel', 'h')
+            ->where('h.locationId=?1')
+            ->setParameter(1, $locationId)
+            ->getQuery();
+
+        $totalHotels = array_pop($query->getResult()[0]);
+
 
         $hotels = [];
         foreach ($hotelsRepository->findBy(['id' => $ids]) as $hotelIem) {
@@ -106,6 +116,8 @@ class HotelsController extends AbstractController
             'success' => true,
             'data' => [
                 'region_id' => $locationId,
+                'total' => $totalHotels,
+                'pages' => ceil($totalHotels/$perPage),
                 'lng' => $currentLocation->getLongitude(),
                 'lat' => $currentLocation->getLatitude(),
                 'hotels' => $hotels,
