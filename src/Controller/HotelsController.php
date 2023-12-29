@@ -33,11 +33,12 @@ class HotelsController extends AbstractController
         $this->entityManager = $entityManager;
     }
 
-    #[Route('/hotels2loc/{location}', name: 'app_hotels_by_oc', methods: ["GET"])]
-    public function hotelsByLocations(Request $request, $location): JsonResponse
+    #[Route('/hotels2loc/{countryCode}/{location}', name: 'app_hotels_by_oc', methods: ["GET"])]
+    public function hotelsByLocations(Request $request, string $countryCode, string $location): JsonResponse
     {
         $locationRep = $this->entityManager->getRepository(Location::class);
         $locations = $locationRep->findBy([
+            'countryCode' => $countryCode,
             'title' => $location,
             'type' => 'City'
         ]);
