@@ -57,9 +57,10 @@ class PaymentController extends AbstractController
             ->setUserName(getenv('ALFABANK_LOGIN'))
             ->setPassword(getenv('ALFABANK_PASSWORD'))
             ->setOrderNumber($payment->getId())
-            ->setReturnUrl('http://hr.rebooking.global/return')
-            //->setReturnUrl($siteRequest->getReturnUrl())
-            ->setAmount(100)//->setAmount($siteRequest->getAmount())
+            //->setReturnUrl('http://hr.rebooking.global/return')
+            ->setReturnUrl($siteRequest->getReturnUrl())
+            //->setAmount(1000)
+            ->setAmount($siteRequest->getAmount())
         ;
 
         parse_str(http_build_query($request), $temp);

@@ -4,9 +4,9 @@ namespace App\Dto\Payment;
 
 class InitPaymentPageResponse
 {
-    public int $errorCode;
+    public int $errorCode = 0;
 
-    public string $errorMessage;
+    public string $errorMessage = '';
 
     public string $orderId;
 
