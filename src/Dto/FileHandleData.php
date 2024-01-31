@@ -14,6 +14,8 @@ class FileHandleData
 
     private int $currentHotelIncrement = 0;
 
+    private string $lastReviewHotelName = '';
+
     public function incrementLastRegion(): FileHandleData
     {
         $this->lastRegion++;
@@ -82,5 +84,15 @@ class FileHandleData
         return $this;
     }
 
+    public function getLastReviewHotelName(): string
+    {
+        return $this->lastReviewHotelName;
+    }
 
+    public function setLastReviewHotelName(string $lastReviewHotelName): FileHandleData
+    {
+        $this->lastReviewHotelName = $lastReviewHotelName;
+
+        return $this;
+    }
 }

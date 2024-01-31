@@ -30,30 +30,33 @@ class ReviewHandler extends BaseHandler
 
     public function handleReviewsFile()
     {
+        $start = microtime(true);
         $hotelsData = Items::fromFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . self::REVIEWS_FILE_NAME, ['decoder' => new ExtJsonDecoder(true)]);
-
-        foreach($hotelsData as $hotelUri => $reviewData){
-            if($reviewData === null){
-                continue;
-            }
-            var_dump($hotelUri);
-            foreach($reviewData['reviews'] as $review){
-                if(!empty($review['images'])){
-                    $this->reviewRepository->insertReviews($reviewData, $hotelUri);
-                    $this->reviewRepository->flush();
-                    return;
-                    //var_dump($review['images']);
-                    //die;
-                    //file_put_contents(static::STORAGE_DIR.'/dsfdsscdwfewfdsf', json_encode($review));
-                    //return;
+        $lastReviewHotel = $this->fileHandleData->getLastReviewHotelName();
+        $done = 0;
+        try {
+            foreach ($hotelsData as $hotelUri => $reviewData) {
+                if (!empty($lastReviewHotel) && $hotelUri !== $lastReviewHotel) {
+                    continue;
                 }
-                continue;
+                if ($reviewData === null) {
+                    continue;
+                }
+                $this->reviewRepository->insertReviews($reviewData, $hotelUri);
+                $this->reviewRepository->flush();
+                $this->fileHandleData->setLastReviewHotelName($hotelUri);
+
+                $done++;
+
+                $totalTime = microtime(true) - $start;
+                if ($totalTime > 550) {
+                    $this->saveFileHandleData();
+                    throw new \Exception(sprintf('out of 550 seconds, time: %s, done: %s' . $totalTime, $done));
+                }
             }
-
-            //$this->reviewRepository->insertReviews($reviewData, $hotelUri);
-
-            //$this->reviewRepository->flush();
-            //return;
+            throw new \Exception('REVIEWS FILE DONE');
+        } catch (\Exception $e) {
+            $this->telegramNotifier->notify($e->getMessage());
         }
     }
 }
