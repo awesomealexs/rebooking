@@ -30,6 +30,7 @@ class ReviewHandler extends BaseHandler
 
     public function handleReviewsFile()
     {
+        $this->telegramNotifier->notify('reviews started');
         $start = microtime(true);
         $hotelsData = Items::fromFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . self::REVIEWS_FILE_NAME, ['decoder' => new ExtJsonDecoder(true)]);
         $lastReviewHotel = $this->fileHandleData->getLastReviewHotelName();
