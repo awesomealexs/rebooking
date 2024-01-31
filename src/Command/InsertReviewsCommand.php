@@ -44,9 +44,6 @@ class InsertReviewsCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
-        $arg1 = $input->getArgument('arg1');
-
         $this->reviewHandler->handleReviewsFile();
 
         return Command::SUCCESS;

@@ -33,10 +33,18 @@ class ReviewHandler extends BaseHandler
         $start = microtime(true);
         $hotelsData = Items::fromFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR . self::REVIEWS_FILE_NAME, ['decoder' => new ExtJsonDecoder(true)]);
         $lastReviewHotel = $this->fileHandleData->getLastReviewHotelName();
+        $scipHotel = true;
+        if ($lastReviewHotel === '') {
+            $scipHotel = false;
+        }
+
         $done = 0;
         try {
             foreach ($hotelsData as $hotelUri => $reviewData) {
-                if (!empty($lastReviewHotel) && $hotelUri !== $lastReviewHotel) {
+                if ($hotelUri === $lastReviewHotel) {
+                    $scipHotel = false;
+                }
+                if ($scipHotel) {
                     continue;
                 }
                 if ($reviewData === null) {
@@ -49,9 +57,9 @@ class ReviewHandler extends BaseHandler
                 $done++;
 
                 $totalTime = microtime(true) - $start;
-                if ($totalTime > 550) {
+                if ($totalTime > 530) {
                     $this->saveFileHandleData();
-                    throw new \Exception(sprintf('out of 550 seconds, time: %s, done: %s' . $totalTime, $done));
+                    throw new \Exception(sprintf('out of 530 seconds, time: %s, done: %s', $totalTime, $done));
                 }
             }
             throw new \Exception('REVIEWS FILE DONE');
