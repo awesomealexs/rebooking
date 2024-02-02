@@ -58,9 +58,9 @@ class ReviewHandler extends BaseHandler
                 $done++;
 
                 $totalTime = microtime(true) - $start;
-                if ($totalTime > 570) {
+                if ($totalTime > 595) {
                     $this->saveFileHandleData();
-                    throw new \Exception(sprintf('out of 570 seconds, time: %s, done: %s', $totalTime, $done));
+                    throw new \Exception(sprintf('out of 595 seconds, time: %s, done: %s', $totalTime, $done));
                 }
             }
             throw new \Exception('REVIEWS FILE DONE');
