@@ -12,6 +12,7 @@ class DeltaHandler extends BaseHandler
     public function makeDelta(): void
     {
         if (!$this->deltaFileHandleData->isHotelsFile()) {
+            $this->telegramNotifier->notify('GETTING DELTA HOTELS FILE');
             $this->getHotelsDeltaFile();
             $this->deltaFileHandleData->setIsHotelsFile(true);
             $this->saveDeltaFileHandleData();
@@ -19,11 +20,13 @@ class DeltaHandler extends BaseHandler
         }
 
         if (!$this->deltaFileHandleData->isHotelsDone()) {
+            $this->telegramNotifier->notify('HOTELS DELTA');
             $this->handleHotelsFile();
             return;
         }
 
         if (!$this->deltaFileHandleData->isReviewsFile()) {
+            $this->telegramNotifier->notify('GETTING DELTA REVIEWS FILE');
             $this->getReviewDeltaFile();
             $this->deltaFileHandleData->setIsReviewsFile(true);
             $this->saveDeltaFileHandleData();
@@ -31,6 +34,7 @@ class DeltaHandler extends BaseHandler
         }
 
         if (!$this->deltaFileHandleData->isReviewsDone()) {
+            $this->telegramNotifier->notify('REVIEWS DELTA');
             $this->handleReviews();
             return;
         }
