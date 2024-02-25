@@ -11,3 +11,5 @@
 /.idea
 .env
 /php-ext-zstd
+
+.php-cs-fixer.cache

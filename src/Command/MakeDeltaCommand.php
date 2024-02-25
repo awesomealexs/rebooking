@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Handler\DeltaHandler;
 use App\Handler\HotelHandler;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -19,7 +20,7 @@ use Symfony\Component\Dotenv\Dotenv;
 )]
 class MakeDeltaCommand extends Command
 {
-    protected HotelHandler $hotelHandler;
+    protected DeltaHandler $deltaHandler;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
@@ -28,7 +29,7 @@ class MakeDeltaCommand extends Command
             ->usePutenv()
             ->bootEnv(dirname(__DIR__, 2) . '/.env');
 
-        $this->hotelHandler = new HotelHandler($entityManager);
+        $this->deltaHandler = new DeltaHandler($entityManager);
 
         parent::__construct();
     }
@@ -43,8 +44,8 @@ class MakeDeltaCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $this->hotelHandler->handleDeltaFile();
 
+        $this->deltaHandler->makeDelta();
 
         return Command::SUCCESS;
     }

@@ -2,6 +2,7 @@
 
 namespace App\Handler;
 
+use App\Dto\DeltaFileHandleData;
 use App\Dto\FileHandleData;
 use App\Helper\FileCutter;
 use App\Helper\JsonHandler;
@@ -22,6 +23,7 @@ abstract class BaseHandler
     public const STORAGE_DIR = self::BASE_DIR . '/src/Storage';
 
     protected const FILE_HANDLE_PATH = self::STORAGE_DIR . '/fileHandle';
+    protected const DELTA_FILE_HANDLE_PATH = self::STORAGE_DIR . '/deltaFileHandle';
 
     protected RatehawkApi $rateHawkApi;
 
@@ -43,6 +45,8 @@ abstract class BaseHandler
 
     protected FileHandleData $fileHandleData;
 
+    protected DeltaFileHandleData $deltaFileHandleData;
+
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
@@ -58,19 +62,22 @@ abstract class BaseHandler
 
         $this->fileCutter = new FileCutter(static::STORAGE_DIR, $this->jsonHandler);
 
-        $this->hotelRepository = new HotelRepository($this->entityManager);
-        $this->locationRepository = new LocationRepository($this->entityManager);
-        $this->reviewRepository = new ReviewRepository($this->entityManager);
+//        $this->hotelRepository = new HotelRepository($this->entityManager);
+//        $this->locationRepository = new LocationRepository($this->entityManager);
+//        $this->reviewRepository = new ReviewRepository($this->entityManager);
 
         $this->telegramNotifier = new TelegramNotifier();
 
         $this->initFileHandleData();
+        $this->initDeltaFileHandleData();
 
         $configuration = new Configuration();
-        $this->rateHawkApi = new RatehawkApi(sprintf('%s:%s',
-            $configuration->getKeyId(),
-            $configuration->getApiKey(),
-        ),
+        $this->rateHawkApi = new RatehawkApi(
+            sprintf(
+                '%s:%s',
+                $configuration->getKeyId(),
+                $configuration->getApiKey(),
+            ),
             static::STORAGE_DIR
         );
     }
@@ -84,8 +91,27 @@ abstract class BaseHandler
         $this->fileHandleData = new FileHandleData();
     }
 
+    protected function initDeltaFileHandleData(): void
+    {
+        if (is_file(static::DELTA_FILE_HANDLE_PATH)) {
+            $this->deltaFileHandleData = unserialize(file_get_contents(static::DELTA_FILE_HANDLE_PATH), ['allowed_classes' => [DeltaFileHandleData::class]]);
+            return;
+        }
+        $this->deltaFileHandleData = new DeltaFileHandleData();
+    }
+
     protected function saveFileHandleData(): void
     {
         file_put_contents(static::FILE_HANDLE_PATH, serialize($this->fileHandleData));
+    }
+
+    protected function saveDeltaFileHandleData(): void
+    {
+        file_put_contents(static::DELTA_FILE_HANDLE_PATH, serialize($this->deltaFileHandleData));
+    }
+
+    protected function purgeDeltaFileHandle(): void
+    {
+        unlink(static::DELTA_FILE_HANDLE_PATH);
     }
 }

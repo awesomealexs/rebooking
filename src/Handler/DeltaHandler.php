@@ -4,51 +4,72 @@ namespace App\Handler;
 
 class DeltaHandler extends BaseHandler
 {
-    protected const LOCATIONS_FILE_NAME = 'Locations';
+    protected const HOTELS_DELTA_FILE_NAME = 'Delta_hotels';
 
-    public function getLocationsDumpFile()
+    protected const REVIEWS_DELTA_FILE_NAME = 'Delta_reviews';
+
+
+    public function makeDelta(): void
+    {
+        if (!$this->deltaFileHandleData->isHotelsFile()) {
+            $this->getHotelsDeltaFile();
+            $this->deltaFileHandleData->setIsHotelsFile(true);
+            $this->saveDeltaFileHandleData();
+            return;
+        }
+
+        if (!$this->deltaFileHandleData->isHotelsDone()) {
+            $this->handleHotelsFile();
+            return;
+        }
+
+        if (!$this->deltaFileHandleData->isReviewsFile()) {
+            $this->getReviewDeltaFile();
+            $this->deltaFileHandleData->setIsReviewsFile(true);
+            $this->saveDeltaFileHandleData();
+            return;
+        }
+
+        if (!$this->deltaFileHandleData->isReviewsDone()) {
+            $this->handleReviews();
+            return;
+        }
+
+        $this->telegramNotifier->notify(sprintf('DELTA DONE, statistics:'));
+        $this->purgeDeltaFileHandle();
+    }
+
+    protected function handleHotelsFile(): void
+    {
+        $this->deltaFileHandleData->setIsHotelsDone(true);
+        $this->saveDeltaFileHandleData();
+    }
+
+    protected function getReviewDeltaFile(): bool
+    {
+        return true;
+    }
+
+    protected function handleReviews(): void
+    {
+        $this->deltaFileHandleData->setIsReviewsDone(true);
+        $this->saveDeltaFileHandleData();
+    }
+
+
+    protected function getHotelsDeltaFile(): bool
     {
         try {
-            $fileName = $this->rateHawkApi->getRegionDump();
-            $resultFileName = static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::LOCATIONS_FILE_NAME;
+            $fileName = $this->rateHawkApi->getHotelsIncremental();
+            $resultFileName = static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::HOTELS_DELTA_FILE_NAME;
             $decompressed = preg_replace('/(.*)\..*/', '$1', $fileName);
             $command = "zstd -d {$fileName}; rm {$fileName};mv {$decompressed} $resultFileName";
             exec($command);
-
 
             return true;
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
             return false;
         }
-    }
-
-    public function handleLocationsDumpFile()
-    {
-        $start = microtime(true);
-        $this->jsonHandler->setFile(static::STORAGE_DIR . DIRECTORY_SEPARATOR.static::LOCATIONS_FILE_NAME, $this->fileHandleData['lastRegion']);
-        $startPos = $this->fileHandleData->getLastRegion();
-        try {
-            while ($regionData = $this->jsonHandler->getItem()) {
-                $this->locationRepository->insertRegion($regionData);
-                $this->fileHandleData->incrementLastRegion();
-                var_dump($this->fileHandleData->getLastRegion());
-
-                if ($this->fileHandleData->getLastRegion() - $startPos > 30000) {
-
-                    throw new \Exception('');
-                }
-            }
-        } catch (\Exception $e) {
-
-        }
-        $this->locationRepository->flush();
-
-        $time = microtime(true) - $start;
-        var_dump($time);
-
-        $done = $this->fileHandleData->getLastRegion() - $startPos;
-        $this->telegramNotifier->notify('done: ' . $done . ' time: ' . $time);
-        $this->saveFileHandleData();
     }
 }

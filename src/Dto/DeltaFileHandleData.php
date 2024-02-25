@@ -4,95 +4,56 @@ namespace App\Dto;
 
 class DeltaFileHandleData
 {
-    private int $lastRegion = 0;
+    protected bool $isHotelsFile = false;
 
-    private int $lastHotel = 0;
+    protected bool $isHotelsDone = false;
 
-    private bool $needToSliceHotels = false;
+    protected bool $isReviewsFile = false;
 
-    private bool $hotelsDumpDone = false;
+    protected bool $isReviewsDone = false;
 
-    private int $currentHotelIncrement = 0;
-
-    private string $lastReviewHotelName = '';
-
-    public function incrementLastRegion(): DeltaFileHandleData
+    public function isHotelsFile(): bool
     {
-        $this->lastRegion++;
+        return $this->isHotelsFile;
+    }
+
+    public function setIsHotelsFile(bool $isHotelsFile): DeltaFileHandleData
+    {
+        $this->isHotelsFile = $isHotelsFile;
+
         return $this;
     }
 
-    public function incrementCurrentHotel(): DeltaFileHandleData
+    public function isHotelsDone(): bool
     {
-        $this->currentHotelIncrement++;
+        return $this->isHotelsDone;
+    }
+
+    public function setIsHotelsDone(bool $isHotelsDone): DeltaFileHandleData
+    {
+        $this->isHotelsDone = $isHotelsDone;
         return $this;
     }
 
-    public function getLastRegion(): int
+    public function isReviewsFile(): bool
     {
-        return $this->lastRegion;
+        return $this->isReviewsFile;
     }
 
-    public function setLastRegion(int $lastRegion): DeltaFileHandleData
+    public function setIsReviewsFile(bool $isReviewsFile): DeltaFileHandleData
     {
-        $this->lastRegion = $lastRegion;
+        $this->isReviewsFile = $isReviewsFile;
         return $this;
     }
 
-    public function getLastHotel(): int
+    public function isReviewsDone(): bool
     {
-        return $this->lastHotel;
+        return $this->isReviewsDone;
     }
 
-    public function setLastHotel(int $lastHotel): DeltaFileHandleData
+    public function setIsReviewsDone(bool $isReviewsDone): DeltaFileHandleData
     {
-        $this->lastHotel = $lastHotel;
-        return $this;
-    }
-
-    public function isNeedToSliceHotels(): bool
-    {
-        return $this->needToSliceHotels;
-    }
-
-    public function setNeedToSliceHotels(bool $needToSliceHotels): DeltaFileHandleData
-    {
-        $this->needToSliceHotels = $needToSliceHotels;
-        return $this;
-    }
-
-    public function isHotelsDumpDone(): bool
-    {
-        return $this->hotelsDumpDone;
-    }
-
-    public function setHotelsDumpDone(bool $hotelsDumpDone): DeltaFileHandleData
-    {
-        $this->hotelsDumpDone = $hotelsDumpDone;
-        return $this;
-    }
-
-    public function getCurrentHotelIncrement(): int
-    {
-        return $this->currentHotelIncrement;
-    }
-
-
-    public function setCurrentHotelIncrement(int $currentHotelIncrement): DeltaFileHandleData
-    {
-        $this->currentHotelIncrement = $currentHotelIncrement;
-        return $this;
-    }
-
-    public function getLastReviewHotelName(): string
-    {
-        return $this->lastReviewHotelName;
-    }
-
-    public function setLastReviewHotelName(string $lastReviewHotelName): DeltaFileHandleData
-    {
-        $this->lastReviewHotelName = $lastReviewHotelName;
-
+        $this->isReviewsDone = $isReviewsDone;
         return $this;
     }
 }
