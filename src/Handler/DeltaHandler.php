@@ -68,7 +68,10 @@ class DeltaHandler extends BaseHandler
         }
 
         $this->deltaFileHandleData->setDeltaInProgress(false);
-        $this->telegramNotifier->notify(sprintf('DELTA DONE, statistics:'));
+        $inserted = $this->deltaFileHandleData->getHotelsCreated();
+        $updated = $this->deltaFileHandleData->getHotelsUpdated();
+        $deleted = $this->deltaFileHandleData->getHotelsDeleted();
+        $this->telegramNotifier->notify(sprintf('DELTA DONE, hotels statistics: created: %s updated: %s deleted:%s', $inserted, $updated, $deleted));
 //        $this->purgeDeltaFiles();
     }
 
@@ -81,10 +84,18 @@ class DeltaHandler extends BaseHandler
     protected function handleHotelsFile(): void
     {
         $start = microtime(true);
-        $this->jsonHandler->setFile(self::DELTA_HOTELS_FILEPATH);
+        $this->jsonHandler->setFile(self::DELTA_HOTELS_FILEPATH, $this->deltaFileHandleData->getHotelsFilePosition());
+        $pointerTime = microtime(true) - $start;
+        if ($pointerTime < 0.1) {
+            $pointerTime = 0;
+        }
+        $this->telegramNotifier->notify(sprintf('time to move pointer: %s', $pointerTime));
+        $i = 0;
+        $idx = $this->deltaFileHandleData->getHotelsFilePosition();
 
-        while ($hotelDta = $this->jsonHandler->getItem()) {
-            $result = $this->hotelRepository->updateHotel($hotelDta);
+        while ($hotelData = $this->jsonHandler->getItem(true)) {
+            $result = $this->hotelRepository->updateHotel($hotelData);
+            $i++;
             switch ($result) {
                 case $result === HotelsDelta::Inserted:
                     $this->deltaFileHandleData->increaseHotelsCreated();
@@ -96,9 +107,30 @@ class DeltaHandler extends BaseHandler
                     $this->deltaFileHandleData->increaseHotelsDeleted();
                     break;
             }
+            $this->deltaFileHandleData->increaseHotelsFilePosition();
+
+            if ($i === 300) {
+                $this->hotelRepository->flush();
+                $this->hotelRepository->initEntities();
+                $this->saveDeltaFileHandleData();
+
+                $i = 0;
+            }
+
+            if (microtime(true) - $start > 265) {
+                $this->hotelRepository->flush();
+                $this->saveDeltaFileHandleData();
+                $done = $this->deltaFileHandleData->getHotelsFilePosition() - $idx;
+                $totalTime = microtime(true) - $start;
+                $this->telegramNotifier->notify(sprintf('out of 265 seconds, time: %s, done:%s', $totalTime, $done));
+                return;
+            }
         }
-//        $this->deltaFileHandleData->setIsHotelsDone(true);
-//        $this->saveDeltaFileHandleData();
+        if ($hotelData === '') {
+            $this->deltaFileHandleData->setIsHotelsDone(true);
+            $this->saveDeltaFileHandleData();
+            return;
+        }
     }
 
     protected function getReviewDeltaFile(): bool

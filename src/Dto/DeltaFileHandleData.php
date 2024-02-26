@@ -74,9 +74,9 @@ class DeltaFileHandleData
         return $this->hotelsFilePosition;
     }
 
-    public function setHotelsFilePosition(int $hotelsFilePosition): DeltaFileHandleData
+    public function increaseHotelsFilePosition(): DeltaFileHandleData
     {
-        $this->hotelsFilePosition = $hotelsFilePosition;
+        $this->hotelsFilePosition++;
         return $this;
     }
 
