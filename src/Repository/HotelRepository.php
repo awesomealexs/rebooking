@@ -12,6 +12,7 @@ use App\Entity\Location;
 use App\Entity\Room;
 use App\Entity\RoomAmenities;
 use App\Entity\RoomImage;
+use App\Enum\HotelsDelta;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
@@ -122,7 +123,7 @@ class HotelRepository
         return preg_replace('/[^а-яА-ЯёЁa-zA-Z0-9\-\,[:space:]]/u', '', $string);
     }
 
-    public function updateHotel(array $hotelData): void
+    public function updateHotel(array $hotelData): HotelsDelta
     {
         $hotel = $this->hotelRepository->findOneBy(['uri' => $hotelData['id']]);
         /**
@@ -132,12 +133,12 @@ class HotelRepository
 
         if ($hotel === null && $hotelData['deleted'] === false) {
             $this->insertHotel($hotelData);
-            return;
+            return HotelsDelta::Inserted;
         }
 
         if ($hotelData['deleted']) {
             $this->entityManager->remove($hotel);
-            return;
+            return HotelsDelta::Deleted;
         }
 
         $hotel
@@ -188,7 +189,7 @@ class HotelRepository
 
 
         $this->entityManager->flush();
-        die;
+        return HotelsDelta::Updated;
     }
 
     public function insertHotel(array $hotelData): void
@@ -298,4 +299,3 @@ class HotelRepository
         return $value;
     }
 }
-

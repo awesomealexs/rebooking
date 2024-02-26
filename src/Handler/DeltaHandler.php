@@ -3,6 +3,7 @@
 namespace App\Handler;
 
 use App\Entity\Delta;
+use App\Enum\HotelsDelta;
 
 class DeltaHandler extends BaseHandler
 {
@@ -13,8 +14,24 @@ class DeltaHandler extends BaseHandler
     protected const DELTA_REVIEWS_FILEPATH = self::STORAGE_DIR.DIRECTORY_SEPARATOR .self::REVIEWS_DELTA_FILE_NAME;
     protected const DELTA_HOTELS_FILEPATH = self::STORAGE_DIR.DIRECTORY_SEPARATOR .self::HOTELS_DELTA_FILE_NAME;
 
+    protected const TWO_DAYS = 48 * 3600;
+
+    protected function isNeedStartDelta(): void
+    {
+        if ($this->deltaFileHandleData->isDeltaInProgress()) {
+            return;
+        }
+        if (time() - $this->deltaFileHandleData->getDeltaDoneTimestamp() > self::TWO_DAYS) {
+            $this->purgeDeltaFileHandle();
+            $this->initDeltaFileHandleData();
+            $this->saveDeltaFileHandleData();
+        }
+    }
+
     public function makeDelta(): void
     {
+        $this->isNeedStartDelta();
+
         if (!$this->deltaFileHandleData->isHotelsFile()) {
             $deltaRepository = $this->entityManager->getRepository(Delta::class);
             $delta = $deltaRepository->findOneBy([], ['id' => 'DESC']);
@@ -29,12 +46,12 @@ class DeltaHandler extends BaseHandler
             $this->saveDeltaFileHandleData();
             return;
         }
-//
-//        if (!$this->deltaFileHandleData->isHotelsDone()) {
-//            $this->telegramNotifier->notify('HOTELS DELTA');
-//            $this->handleHotelsFile();
-//            return;
-//        }
+
+        if (!$this->deltaFileHandleData->isHotelsDone()) {
+            $this->telegramNotifier->notify('HOTELS DELTA');
+            $this->handleHotelsFile();
+            return;
+        }
 
 //        if (!$this->deltaFileHandleData->isReviewsFile()) {
 //            $this->telegramNotifier->notify('GETTING DELTA REVIEWS FILE');
@@ -50,8 +67,8 @@ class DeltaHandler extends BaseHandler
             return;
         }
 
+        $this->deltaFileHandleData->setDeltaInProgress(false);
         $this->telegramNotifier->notify(sprintf('DELTA DONE, statistics:'));
-        $this->purgeDeltaFileHandle();
 //        $this->purgeDeltaFiles();
     }
 
@@ -63,8 +80,25 @@ class DeltaHandler extends BaseHandler
 
     protected function handleHotelsFile(): void
     {
-        $this->deltaFileHandleData->setIsHotelsDone(true);
-        $this->saveDeltaFileHandleData();
+        $start = microtime(true);
+        $this->jsonHandler->setFile(self::DELTA_HOTELS_FILEPATH);
+
+        while ($hotelDta = $this->jsonHandler->getItem()) {
+            $result = $this->hotelRepository->updateHotel($hotelDta);
+            switch ($result) {
+                case $result === HotelsDelta::Inserted:
+                    $this->deltaFileHandleData->increaseHotelsCreated();
+                    break;
+                case $result === HotelsDelta::Updated:
+                    $this->deltaFileHandleData->increaseHotelsUpdated();
+                    break;
+                case $result === HotelsDelta::Deleted:
+                    $this->deltaFileHandleData->increaseHotelsDeleted();
+                    break;
+            }
+        }
+//        $this->deltaFileHandleData->setIsHotelsDone(true);
+//        $this->saveDeltaFileHandleData();
     }
 
     protected function getReviewDeltaFile(): bool
@@ -95,8 +129,8 @@ class DeltaHandler extends BaseHandler
         try {
             $fileData = $this->rateHawkApi->getHotelsIncremental($lastUpdated);
             if ($fileData === null) {
-                $this->logger->debug('No updates on delta');
-                $this->telegramNotifier->notify('No updates on delta');
+                $this->logger->debug('No new updates on hotels delta');
+                $this->telegramNotifier->notify('No new updates on hotels delta');
                 $this->deltaFileHandleData->setIsReviewsDone(true);
                 return true;
             }

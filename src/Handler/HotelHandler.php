@@ -13,32 +13,6 @@ class HotelHandler extends BaseHandler
 
     protected const HOTELS_INCREMENTAL_FILE_NAME = 'Hotels_incremental';
 
-    public function getHotelsDeltaFile(): bool
-    {
-        try {
-            $fileName = $this->rateHawkApi->getHotelsIncremental();
-            $resultFileName = static::STORAGE_DIR . DIRECTORY_SEPARATOR . static::HOTELS_INCREMENTAL_FILE_NAME;
-            $decompressed = preg_replace('/(.*)\..*/', '$1', $fileName);
-            $command = "zstd -d {$fileName}; rm {$fileName};mv {$decompressed} $resultFileName";
-            exec($command);
-
-            return true;
-        } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
-            return false;
-        }
-    }
-
-    public function handleDeltaFile(): void
-    {
-        $start = microtime(true);
-        $this->jsonHandler->setFile(static::STORAGE_DIR.DIRECTORY_SEPARATOR.static::HOTELS_INCREMENTAL_FILE_NAME);
-
-        while($hotelDta = $this->jsonHandler->getItem()){
-            $this->hotelRepository->updateHotel($hotelDta);
-        }
-    }
-
     protected function sliceHotelsFile(): void
     {
         $start = microtime(true);
@@ -64,7 +38,7 @@ class HotelHandler extends BaseHandler
         return $this->fileHandleData->isHotelsDumpDone();
     }
 
-    public function handleHotelsDumpFile()
+    public function handleHotelsDumpFile(): void
     {
         if ($this->fileHandleData->isNeedToSliceHotels()) {
             $this->sliceHotelsFile();
@@ -176,7 +150,6 @@ class HotelHandler extends BaseHandler
 
 
                 if (microtime(true) - $fileHandlingStart > 980) {
-
                     $this->saveFileHandleData();
                     $done = $this->fileHandleData->getLastHotel() - $idx;
                     $totalIdx = $this->fileHandleData->getLastHotel();
