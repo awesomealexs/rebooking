@@ -51,7 +51,7 @@ abstract class BaseHandler
     {
         $this->entityManager = $entityManager;
 
-        $logDir = static::BASE_DIR . '/Logs/ApiLog';
+        $logDir = static::BASE_DIR . '/var/log/log';
 
         $handler = new RotatingFileHandler($logDir);
 
@@ -62,9 +62,9 @@ abstract class BaseHandler
 
         $this->fileCutter = new FileCutter(static::STORAGE_DIR, $this->jsonHandler);
 
-//        $this->hotelRepository = new HotelRepository($this->entityManager);
-//        $this->locationRepository = new LocationRepository($this->entityManager);
-//        $this->reviewRepository = new ReviewRepository($this->entityManager);
+        $this->hotelRepository = new HotelRepository($this->entityManager);
+        $this->locationRepository = new LocationRepository($this->entityManager);
+        $this->reviewRepository = new ReviewRepository($this->entityManager);
 
         $this->telegramNotifier = new TelegramNotifier();
 

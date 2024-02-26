@@ -26,7 +26,7 @@ class RatehawkApi
      *
      * @see \GuzzleHttp\RequestOptions for a list of available request options.
      */
-    function __construct(string $key, string $downLoadDirectory, array $config = [])
+    public function __construct(string $key, string $downLoadDirectory, array $config = [])
     {
         $logDir = dirname(__DIR__) . '/Logs/ApiLog.log';
         $handler = new RotatingFileHandler($logDir);
@@ -74,23 +74,31 @@ class RatehawkApi
 
     public function getRegionDump(): string
     {
-        return $this->getAndSaveFile(Endpoints::HOTEL_REGION_DUMP);
+        $fileMetaData = $this->getFileMetaData(Endpoints::HOTEL_REGION_DUMP);
+
+        return $this->getAndSaveFile($fileMetaData['data']['url']);
     }
 
-    protected function getAndSaveFile(string $endpoint, array $options = []): string
+    protected function getFileMetaData(string $endpoint, array $options = []): array
     {
-        $response = json_decode($this->httpClient
+        $response = json_decode(
+            $this->httpClient
             ->post($endpoint, $options)
             ->getBody()
             ->getContents(),
             true,
             512,
-            JSON_THROW_ON_ERROR);
+            JSON_THROW_ON_ERROR
+        );
 
         if (empty($response['data']['url'])) {
             throw new \Exception('EMPTY HOTELS DUMP URL');
         }
+        return $response;
+    }
 
+    protected function getAndSaveFile(string $url): string
+    {
         $tempFileName = $this->downLoadDirectory . DIRECTORY_SEPARATOR . md5(microtime(true)) . '.zstd';
 
         $tempFile = fopen($tempFileName, 'wb');
@@ -98,7 +106,7 @@ class RatehawkApi
         $httpClientWOBasic = new HttpClient();
 
         $httpClientWOBasic->get(
-            $response['data']['url'],
+            $url,
             [
                 RequestOptions::SINK => $tempFile,
             ]
@@ -114,7 +122,9 @@ class RatehawkApi
             'language' => 'ru',
         ], JSON_THROW_ON_ERROR);
 
-        return $this->getAndSaveFile(Endpoints::HOTEL_INFO_DUMP, $options);
+        $fileMetaData = $this->getFileMetaData(Endpoints::HOTEL_INFO_DUMP, $options);
+
+        return $this->getAndSaveFile($fileMetaData['data']['url']);
     }
 
     public function getReviewsDump(): string
@@ -123,15 +133,27 @@ class RatehawkApi
             'language' => 'ru',
         ], JSON_THROW_ON_ERROR);
 
-        return $this->getAndSaveFile(Endpoints::HOTEL_REVIREW_DUMP, $options);
+        $fileMetaData = $this->getFileMetaData(Endpoints::HOTEL_REVIEW_DUMP, $options);
+
+        return $this->getAndSaveFile($fileMetaData['data']['url']);
     }
 
-    public function getHotelsIncremental(): string{
+    public function getHotelsIncremental(string $lastUpdate): ?array
+    {
         $options['body'] = json_encode([
             'inventory' => 'all',
             'language' => 'ru',
         ], JSON_THROW_ON_ERROR);
 
-        return $this->getAndSaveFile(Endpoints::HOTEL_INCREMENTAL_DUMP, $options);
+        $fileMetaData = $this->getFileMetaData(Endpoints::HOTEL_INCREMENTAL_DUMP, $options);
+
+        if ($fileMetaData['data']['last_update'] === $lastUpdate) {
+            return null;
+        }
+
+        return [
+            'filename' => $this->getAndSaveFile($fileMetaData['data']['url']),
+            'last_update' => $fileMetaData['data']['last_update'],
+        ];
     }
 }
